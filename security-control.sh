@@ -7,7 +7,7 @@
 ####
 VERSION="v3.0"
 
-. /basic.inc
+. ./basic.inc
 
 source ./helper.inc
 

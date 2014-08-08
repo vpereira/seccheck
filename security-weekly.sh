@@ -10,7 +10,7 @@
 
 . /etc/sysconfig/seccheck
 
-. basic.inc
+. ./basic.inc
 
 source helper.inc
 
@@ -38,13 +38,13 @@ check_guessable_passwords "extended"
 # neverlogin check
 check_neverlogin $SEC_BIN $OUT
 
-check_suid_gid $MNT
+check_suid_gid $MNT $OUT
 
-check_writable_executable $MNT
+check_writable_executable $MNT $OUT
 
-check world_writable $MNT
+check world_writable $MNT $OUT
 
-check_new_devices $MNT
+check_new_devices $MNT $OUT
 
 
 ####

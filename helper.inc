@@ -37,17 +37,16 @@ function create_secdir () {
 
 # param a username
 function guessable_password_email {
-    RET_TMPL=`sed "s/{guessable_account}/$1/" blurbs/guessable_passwd.txt`
-    echo $RET_TMPL
+    ret_tmpl=`sed "s/{guessable_account}/$1/" blurbs/guessable_passwd.txt`
+    echo $ret_tmpl
 }
 
 # those files are needed 
-# param $1 = SEC_DATA, normally /usr/lib/seccheck
-
+# param $1 = SEC_DATA, normally /var/lib/seccheck/data
 function initialize_secfiles () {
-    for i in "$1/rpm-md5" "$1/sbit" "$1/write" "$1/devices" "$1/write-bin"; do
-        if [ ! -e "$i" ] ; then
-            touch "$i"
+    for i in "rpm-md5" "sbit" "write" "devices" "write-bin"; do
+        if [ ! -e "$1/$i" ] ; then
+            touch "$1/$i"
         fi
     done
 }
@@ -71,9 +70,10 @@ function check_neverlogin () {
 # if you pass "quick" as argument it will simple try to find easy 
 # guessable passwords. otherwise it will use a dictionary
 function check_guessable_passwords () {
+
     if type -p john >/dev/null && type -p unshadow >/dev/null ; then
         # Copy passwd file. Use unique name to avoid races when john takes very long
-        SEC_PASSWD=$SEC_VAR/passwd.$$
+        SEC_PASSWD="$SEC_VAR/passwd.$$"
         OUT="$TMPDIR/security.out" # random name please
         echo -e '\nComplete list of user accounts with guessable passwords:'
         unshadow /etc/passwd /etc/shadow > $SEC_PASSWD
@@ -89,78 +89,91 @@ function check_guessable_passwords () {
                 for i in `cat "$OUT"`; do
                     $MAILER guessable_password_email "$i"  # set mailer
                 done
-            end
+            fi
         fi
         cat $OUT
         /bin/rm -f $SEC_VAR/passwd
         /bin/rm -f $OUT
     fi
-
 }
 
-# param mount points
+# param mount points and output-file
 function check_suid_sgid () {
-    ( nice -n 1 find $1 -mount \( -perm -04000 -o -perm -02000 \) -type f | sort | \
+    mnt_point=$1
+    output_file=$2
+    ( nice -n 1 find $mnt_point -mount \( -perm -04000 -o -perm -02000 \) -type f | sort | \
         xargs --no-run-if-empty ls -cdl --time-style=long-iso -- > "$SEC_DATA/sbit.new" ) 2> /dev/null
     diff -uw "$SEC_DATA/sbit" "$SEC_DATA/sbit.new" | \
-        egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$OUT"
-    if [ -s "$OUT" ] ; then
+        egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
+    if [ -s "$output_file" ] ; then
         printf "\nThe following files are suid/sgid:\n"
-        cat "$OUT"
+        cat "$output_file"
     fi
     mv "$SEC_DATA/sbit.new" "$SEC_DATA/sbit"
+    rm -f $output_file
 }
 
-# param mount points
+# param mount points and output-file
 function check_writable_executable () {
-    ( nice -n 1 find $1 -mount \( -perm -30 -o -perm -3 \) -type f | sort | \
+    mnt_point=$1
+    output_file=$2
+    ( nice -n 1 find $mnt_point -mount \( -perm -30 -o -perm -3 \) -type f | sort | \
         xargs --no-run-if-empty ls -cdl --time-style=long-iso -- > "$SEC_DATA/write-bin.new" ) 2> /dev/null
     diff -uw "$SEC_DATA/write-bin" "$SEC_DATA/write-bin.new" | \
-        egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$OUT"
-    if [ -s "$OUT" ] ; then
+        egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
+    if [ -s "$output_file" ] ; then
         printf "\nThe following program executables are group/world writeable:\n"
-        cat "$OUT"
+        cat "$output_file"
     fi
     mv "$SEC_DATA/write-bin.new" "$SEC_DATA/write-bin"
+    rm -f $output_file
 }
 
-# param mount point
+# param mount points and output-file
 function check_world_writable () {
-    ( nice -n 1 find $1 -mount -perm -2 \( -type f -o -type d \) -not -perm -01000 | sort > "$SEC_DATA/write.new" ) 2> /dev/null
+    mnt_point=$1
+    output_file=$2
+    ( nice -n 1 find $mnt_point -mount -perm -2 \( -type f -o -type d \) -not -perm -01000 | sort > "$SEC_DATA/write.new" ) 2> /dev/null
     diff -uw "$SEC_DATA/write" "$SEC_DATA/write.new" | \
-        egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$OUT"
-    if [ -s "$OUT" ] ; then
+        egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
+    if [ -s "$output_file" ] ; then
         printf "\nThe following files/directories are world writeable and not sticky:\n"
-        cat "$OUT"
+        cat "$output_file"
     fi
     mv "$SEC_DATA/write.new" "$SEC_DATA/write"
+    rm -f $output_file
 }
 
-# param mount point
+# param mount points and output-file
 function check_new_devices () {
+    mnt_point=$1
+    output_file=$2
     # warning: bug #51004 ls output depends on root's locale and may be less
     # then 10 tokens!
-    ( nice -n 1 find $1 -mount -type c -or -type b | xargs --no-run-if-empty ls -cdl --time-style=long-iso -- | \
+    ( nice -n 1 find $mnt_point -mount -type c -or -type b | xargs --no-run-if-empty ls -cdl --time-style=long-iso -- | \
     awk '{print $1 " \t" $3 " \t" $4 " \t" $5 " \t" $6 " \t" $9}' | sort +5 \
     > "$SEC_DATA/devices.new" ) 2> /dev/null
     diff -uw "$SEC_DATA/devices" "$SEC_DATA/devices.new" | \
-    egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$OUT"
-    if [ -s "$OUT" ] ; then
+    egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
+    if [ -s "$output_file" ] ; then
         printf "\nThe following devices were added:\n"
-        cat "$OUT"
+        cat "$output_file"
     fi
     mv "$SEC_DATA/devices.new" "$SEC_DATA/devices"
-
+    rm -f $output_file
 }
 
+# param output-file
 function check_md5 () {
+    output_file=$1
     nice -n 1 rpm -Va 2> /dev/null | grep '^5' > "$SEC_DATA/rpm-md5.new"
     diff -uw "$SEC_DATA/rpm-md5" "$SEC_DATA/rpm-md5.new" | \
-        egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$OUT"
-    if [ -s "$OUT" ] ; then
+        egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
+    if [ -s "$output_file" ] ; then
         printf "\nThe following programs have got a different md5 checksum since last week:\n"
-        cat "$OUT"
+        cat "$output_file"
     fi
     mv "$SEC_DATA/rpm-md5.new" "$SEC_DATA/rpm-md5"
+    rm -f $output_file
 }
 

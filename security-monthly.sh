@@ -5,7 +5,7 @@
 #
 ####
 
-. basic.inc
+. ./basic.inc
 
 source ./helper.inc
 
