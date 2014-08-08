@@ -1,0 +1,10 @@
+This is an automated mail by the seccheck tool. If you want to disable
+this service, set START_SECCHK=no in /etc/sysconfig/seccheck.
+
+DISCLAIMER
+   
+Please note that these security checks are neither complete nor reliable.
+Any attacker with proper experience and root access to your system can
+deceive *any* security check!
+
+

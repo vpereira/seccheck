@@ -1,0 +1,68 @@
+
+			SuSE Security Checker
+
+		(c) 1999,2000 by Marc Heuse <marc@suse.de>
+
+
+The SuSE Security Checker is a set of several shellscripts which check the
+local security of the system on a regular basis.
+
+Three main scripts are executed:
+	security-daily		is started daily by cron
+	security-weekly		is started once a week by cron
+	security-monthly	is started once a month by cron
+
+Most code of the daily security script was ripped off the OpenBSD
+/etc/security script.
+
+The daily script runs at midnight, and only if changes to the last run (the
+night before) are found, a mail with the differences will be sent.
+The weekly script runs every monday at 1:00am, and only if changes to the
+last run (the week before) are found, a mail with the differences will be
+sent.
+The monthly script runs every on every 1st of the month and sends the full
+last daily and weekly report via email.
+
+Please note that you can change the receiver of the seccheck mails from root
+to anyone else if you add an entry like this one to /etc/sysconfig/seccheck:
+SECCHK_USER="firewall" # exchange firewall is an admin user's account name
+
+Please also note that the START_SECCHK variable from /etc/sysconfig/seccheck
+controls whether the security check will be run from cron. (It's ignored, if
+you call security-control manually.)
+
+The following daily checks are done:
+ /etc/passwd check : length/number/contents of fields, accounts with same uid
+			accounts with uid/gid of 0 or 1 beside root and bin
+ /etc/shadow check : length/number/contents of fields, accounts with no password
+ /etc/group check  : length/number/contents of fields
+ user root checks  : secure umask and PATH
+ /etc/ftpusers     : checks if important system users are put there
+ /etc/aliases      : checks for mail aliases which execute programs
+ .rhosts check     : checks if users' .rhosts file contain + signs
+ homedirectory     : checks if homedirectories are writable or owned by
+			someone else
+ dot-files check   : checks many dot-files in the homedirectories if they
+			are writable or owned by someone else
+ mailbox check     : checks if user mailboxes are owned by user and unreadable
+ NFS export check  : exports should not be exported globaly
+ NFS import check  : NFS mounts should have the "nosuid" option set
+ promisc check     : checks if network cards are in promiscious mode
+ list modules      : just lists loaded modules
+ list sockets      : just lists open ports
+
+The following weekly checks are done:
+ password check    : runs john to crack the password file, user will get an
+			email notice to change his password asap
+ rpm md5 check     : checks for changed files via rpm's md5 checksum feature
+ suid/sgid check   : lists all suid and sgid files
+ exec group write  : lists all executables which are group/world writeable
+ writable check    : lists all files which are world writable (incl. above)
+ device check      : lists all devices
+
+The following monthly things are done:
+ The monthly file is not a diff like the daily/weekly ones but the full
+ reports in one file.
+
+
+If you have got questions or find bugs, mail to marc@suse.de

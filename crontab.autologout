@@ -1,0 +1,6 @@
+RUN_FROM_CRON=yes
+#
+# SUSE Security Autologout
+#
+#-*/10 * * * *	root  test -x /usr/lib/secchk/autologout.sh && /usr/lib/secchk/autologout.sh
+

@@ -1,0 +1,22 @@
+# Patch series file for quilt, created by quilt setup
+# Source: seccheck-2.0.tar.bz2
+# Patchdir: seccheck-2.0
+#
+seccheck-2.0.diff -p0
+seccheck-2.0-misc.patch
+seccheck-2.0-nisfix.patch
+seccheck-2.0-grep.patch
+seccheck-2.0-sort.patch
+seccheck-2.0-newpromisccheck.patch
+seccheck-2.0-filesystems_added.patch -p0
+seccheck-2.0_withoutmedia-bug47024.diff
+seccheck-2.0_update-datafiles-regexfix-bug51004.diff
+seccheck-2.0_fix-ls-output-local.diff
+seccheck-2.0_find_mount_arg.diff
+seccheck-2.0_find_with_dev.diff
+seccheck-2.0_dont_run_xarg_on_empty_input.diff
+seccheck-2.0-john.patch -p0
+seccheck-2.0-website.patch -p0
+seccheck-2.0_new_rpm_output_handle_more_filesystems_bnc746042.diff -p0
+seccheck-2.0_daily_uid_bnc769770.diff
+seccheck-2.0-autologout.patch

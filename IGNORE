@@ -1,0 +1,7 @@
+#
+# this is not for you. ignore it.
+#
+for i in security-control.sh security-daily.sh security-monthly.sh security-weekly.sh; do
+ joe $i
+done
+delbak

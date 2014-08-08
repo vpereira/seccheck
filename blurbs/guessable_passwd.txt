@@ -1,0 +1,9 @@
+Subject: Please change your Password
+
+Your password for account {guessable_account} is insecure.
+Please change it as soon as possible.
+
+Yours,
+        Password Checking Robot
+
+

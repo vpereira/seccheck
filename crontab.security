@@ -1,0 +1,7 @@
+RUN_FROM_CRON=yes
+#
+# SuSE Security Checks
+#
+0 0 * * *	root  test -x /usr/lib/secchk/security-control.sh && /usr/lib/secchk/security-control.sh daily &
+0 1 * * 1	root  test -x /usr/lib/secchk/security-control.sh && /usr/lib/secchk/security-control.sh weekly &
+0 4 1 * *	root  test -x /usr/lib/secchk/security-control.sh && /usr/lib/secchk/security-control.sh monthly &

@@ -1,0 +1,5 @@
+* allow longer usernames than 8 chars, and with special chars like "-" ?
+
+* should the daily checks also take a look at the checksums of suid files?
+
+* make secchk configurable (e.g. /etc/secchk.conf ?)

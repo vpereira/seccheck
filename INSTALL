@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# seccheck installation
+# if this is not a SuSE Linux, your cron setup might be different ...
+#
+install -d -o root -g root -m 700 /var/lib/secchk
+install -d -o root -g root -m 700 /var/lib/secchk/data
+install -d -o root -g root -m 755 /etc/cron.d
+install -d -o root -g root -m 750 /usr/lib/secchk
+install -d -o root -g root -m 755 /usr/share/doc/packages/secchk
+install -o root -g root -m 644 CHANGES TODO README /usr/share/doc/packages/secchk
+install -o root -g root -m 600 crontab.security /etc/cron.d/seccheck
+install -o root -g root -m 740 *.sh /usr/lib/secchk/
+install -o root -g root -m 740 checkneverlogin /usr/lib/secchk/
+
+# redhat has not pidof? duh ...
+if test -x `which pidof 2> /dev/null`; then
+    kill -HUP `pidof cron` 2> /dev/null
+elif test -f /var/run/crond.pid; then
+    kill -HUP `cat /var/run/crond.pid` 2> /dev/null
+else
+    echo "crond seems not to be running at the moment - please check"
+fi

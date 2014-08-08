@@ -1,0 +1,69 @@
+v2.0
+	* fixed an egrep bug - which was reported looooong time ago :-(
+	* workarounds for Redhat ... they should update the mktempa and
+	  provide pidof ... duh ... (thanks to weutzing@exozet.com)
+
+v1.9	23.06.01	(gamma release)
+	* finally fixed the output of the weekly changes to prevent
+	  unnecessary lines
+	* Added small fix to prevent "undisclosed receipent" msg in mailers
+
+v1.8	29.04.01	(gamma release)
+	* rewrote the mail header message for the change reports
+	* added LICENCE (GPLv2) - required by SuSE policy
+
+v1.7	07.04.01	(gamma release)
+	* fixed a check for /etc/shadow password field contents
+
+v1.6	10.12.00	(gamma release)
+	* fixed another DOS possbility (thanks to <dynamo@ime.net>)
+	* fixed a bug in the weekly check where NFS/cdrom mounts were
+	  not excluded in one find query (thanks to kappes@physik.uni-bonn.de)
+
+v1.5	20.11.00	(gamma release)
+	* fixed a hole where an attacker could hide his backdoor from the
+	  lsof output
+	* fixed several small bugs and DOS possibilities
+	! thanks a lot to <dynamo@ime.net>, <g8keeper@the.whole.net> and
+	  <thomas@an-netz.de> for reporting!
+
+v1.4	17.09.00	(gamma release) -> SuSE Update
+	* lsof wont show established connections anymore
+	* minor fixes
+
+v1.3	11.05.00	(beta release) -> SuSE 7.0
+	* Typo in the INSTALL file prevented the documentation to be installed
+	* removed display of pid in the output of lsof
+
+v1.2	05.05.00	(beta release)
+	* Added the checkneverlogin script, which will be executed weekly
+	* Added reiserfs support for finding suid/writable files
+	* The hostname is now printed in the subject line of the email and
+	  output so if seccheck is used on many servers and forwarded to one
+	  mail account they are easily destinguishable
+	* removed printing of some unnecessary output
+	* made the daily script unnoticable faster
+	* Rewrote the monthly script to add all information and display it better
+
+v1.1	16.04.00	(beta release)
+	* Added a README! which describes the checks and setup ;-)
+	* Better INSTALL script ... thanks to the nice maintainer ;-)
+	* Added a group writeable check for all executables to the weekly check
+	* switched the output display of the weekly output
+
+v1.0	13.04.00	(beta release)
+	* Fixed some display stuff to remove senseless lines in the output
+	* Fixed an abort of the daily script if a monolithic kernel is used
+	* Some more dot-files are checked now
+
+v0.9	13.02.00	(beta release) -> SuSE 6.4
+	* The SECCHK_USER variable let's you define the receipient of the
+	  output (defaults to "root", as before)
+	* Stephan martin reported a small display bug, thanks!
+	* Some small changes to the daily output (sort/uniq)
+	* Login names in /etc/passwd may include a "." now
+	* Added -n to the lsof calls to prevent lengthy dns lookups
+	* The weekly script runs it's intensive programs with nice 1 now
+
+v0.8	27.09.99	(gamma release) -> SuSE 6.3
+<we begin our history here ...>

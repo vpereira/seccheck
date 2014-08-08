@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# Small shellscript by Marc Heuse <marc@suse.de> which checks for accounts
+# which have got a password set, but never someone logged on to - this means
+# that they might still have their initial weak password!
+#
+. /basic.inc
+
+for i in `lastlog | awk '/Never logged in/ {print$1}'`; do
+    true = 0
+    SHELL=`grep "^$i:" /etc/passwd | awk -F: '{print$7}'`
+    test -z "$SHELL" && SHELL="/bin/sh"
+    grep -q "^$SHELL" /etc/shells && export true=1
+    test "$true" = 1 && {
+	true=`awk -F:  "/^$i:/ "'{
+            if (length($2) > 12)
+                printf("2\n");
+            if ($2 == "")
+		printf("3\n");
+        }' /etc/shadow`
+	test "$true" = 2 && echo "Warning: user $i has got a password and a valid shell but never logged in."
+	test "$true" = 3 && echo "Warning: user $i has got NO password and a valid shell."
+    }
+done
