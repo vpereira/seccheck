@@ -76,6 +76,7 @@ if [ -s "$TMP2" ] ; then
         done < $TMP2 | column
 fi
 cp -pf $PW $PW.backup
+
 #
 # /etc/shadow check
 #
@@ -416,18 +417,14 @@ test -e /proc/modules && { lsmod 2> /dev/null | grep -v '^Module .* Used by$' | 
     cat "$OUT"
  fi
 }
+
 # nfs mounts with missing nosuid
-> $OUT
-/bin/mount | /usr/bin/grep -v nosuid | /usr/bin/grep ' nfs ' |sort > $OUT
-if [ -s "$OUT" ] ; then
-    printf "\nThe following NFS mounts haven't got the nosuid option set:\n"
-    cat "$OUT"
-fi
+nfs_mounted_with_missing_nosuid
+
+
 # display programs with bound sockets
-if [ -x /usr/bin/lsof ]; then
-    printf "\nThe following programs have got bound sockets:\n"
-    /usr/bin/lsof -i -n -P | egrep 'UDP|TCP.*LISTEN' | sed 's/....[0-9]u  IP.*     /   /' | sed 's/  FD   TYPE DEVICE SIZE NODE NAME/PROTO PORT/' | sed 's/ [0-9][0-9]* / /'|sed 's/ PID / /'|sort -u
-fi
+display_programs_with_bound_sockets
+
 
 ####
 #

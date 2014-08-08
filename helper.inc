@@ -61,9 +61,9 @@ function check_neverlogin () {
     $bin_path/checkneverlogin > "$output_file"
     if [ -s "$output_file" ] ; then
 	    printf "\nPlease check and perhaps disable the following unused accounts:\n"
-	    cat $output_file
+	    cat "$output_file"
     fi
-    rm -f $output_file
+    rm -f "$output_file"
 }
 
 # use john the ripper to check guessable passwords
@@ -110,7 +110,7 @@ function check_suid_sgid () {
         cat "$output_file"
     fi
     mv "$SEC_DATA/sbit.new" "$SEC_DATA/sbit"
-    rm -f $output_file
+    rm -f "$output_file"
 }
 
 # param mount points and output-file
@@ -126,7 +126,7 @@ function check_writable_executable () {
         cat "$output_file"
     fi
     mv "$SEC_DATA/write-bin.new" "$SEC_DATA/write-bin"
-    rm -f $output_file
+    rm -f "$output_file"
 }
 
 # param mount points and output-file
@@ -141,7 +141,7 @@ function check_world_writable () {
         cat "$output_file"
     fi
     mv "$SEC_DATA/write.new" "$SEC_DATA/write"
-    rm -f $output_file
+    rm -f "$output_file"
 }
 
 # param mount points and output-file
@@ -160,7 +160,7 @@ function check_new_devices () {
         cat "$output_file"
     fi
     mv "$SEC_DATA/devices.new" "$SEC_DATA/devices"
-    rm -f $output_file
+    rm -f "$output_file"
 }
 
 # param output-file
@@ -174,5 +174,25 @@ function check_md5 () {
         cat "$output_file"
     fi
     mv "$SEC_DATA/rpm-md5.new" "$SEC_DATA/rpm-md5"
-    rm -f $output_file
+    rm -f "$output_file"
+}
+
+function display_programs_with_bound_sockets () {
+    if [ -x /usr/bin/lsof ]; then
+        printf "\nThe following programs have got bound sockets:\n"
+        /usr/bin/lsof -i -n -P | egrep 'UDP|TCP.*LISTEN' | sed 's/....[0-9]u  IP.*     /   /' | \ 
+        sed 's/  FD   TYPE DEVICE SIZE NODE NAME/PROTO PORT/' | sed 's/ [0-9][0-9]* / /'| \ 
+        sed 's/ PID / /'|sort -u
+    fi
+
+}
+
+function nfs_mounted_with_missing_nosuid () {
+    output_file=`mktemp -t mounted_with_missing_nosuid.XXXX` # TEMPDIR is set but not exported.. does it work?
+    /bin/mount | /usr/bin/grep -v nosuid | /usr/bin/grep ' nfs ' |sort > $output_file
+    if [ -s "$output_file" ] ; then
+        printf "\nThe following NFS mounts haven't got the nosuid option set:\n"
+        cat "$output_file"
+    fi
+    rm -f "$output_file"
 }
