@@ -36,37 +36,8 @@ MNT=`/bin/mount | grep -E "^/dev/"  | cut -d' ' -f 3 | grep -v "/media" | xargs 
 
 set_mailer
 
-# password check
-if type -p john >/dev/null && type -p unshadow >/dev/null ; then
-    echo > $SEC_VAR/dict
-    cat /usr/dict/* /var/lib/john/password.lst 2> /dev/null | sort | uniq >> $SEC_VAR/dict
-
-    # Copy passwd file. Use unique name to avoid races when john takes very long
-    SEC_PASSWD=$SEC_VAR/passwd.$$
-    unshadow /etc/passwd /etc/shadow > $SEC_PASSWD
-    nice -n 1 john -single "$SEC_PASSWD" 1> /dev/null 2>&1
-    nice -n 1 john -rules -w:$SEC_VAR/dict "$SEC_PASSWD" 1> /dev/null 2>&1
-    john -show "$SEC_PASSWD" | sed -n 's/:.*//p' > "$OUT"
-    if [ -s "$OUT" ] ; then
-        for i in `cat "$OUT"`; do
-             $MAILER "$i" << _EOF_
-Subject: Please change your Password
-
-Your password for account "$i" is insecure.
-Please change it as soon as possible.
-
-Yours,
-        Password Checking Robot
-
-_EOF_
-        done
-        printf "\nThe following user accounts have guessable passwords:\n"
-	cat "$OUT"
-    fi
-else
-    echo -e "\nPassword security checking not possible, package "john" not installed."
-fi
-rm -f $SEC_PASSWD
+# extended password check
+check_guessable_passwords "extended"
 
 # neverlogin check
 $SEC_BIN/checkneverlogin > "$OUT"
