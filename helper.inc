@@ -196,3 +196,48 @@ function nfs_mounted_with_missing_nosuid () {
     fi
     rm -f "$output_file"
 }
+
+function list_loaded_kernel_modules () {
+    output_file=`mktemp -t loaded_kernel_modules.XXXX` # TEMPDIR is set but not exported.. does it work?
+    test -e /proc/modules && { 
+        lsmod 2> /dev/null | grep -v '^Module .* Used by$' | awk '{print$1}' | sort > $output_file
+        if [ -s "$output_file" ] ; then
+            printf "\nThe following loadable kernel modules are currently installed:\n"
+            cat "$output_file"
+        fi
+    }
+    rm -f "$output_file"
+}
+
+function check_promisc () {
+    # new promisc check
+    # rewrite of promisc check to catch all cases even from other hosts if
+    # script runs on a central syslog host. Thomas Biege <thomas@suse.de>
+    
+    # local devices
+    output_file=`mktemp -t mounted_with_missing_nosuid.XXXX` # TEMPDIR is set but not exported.. does it work?
+
+    for IF in $(grep "$(date +"%b %e")" /var/log/messages \
+              | grep "$HOSTNAME kernel: device .* entered promiscuous mode" \
+              | awk -F' ' '{print $7}')
+    do
+            ifconfig $IF | grep -C 2 PROMISC | grep -v '   [RT]X p' >> $output_file
+    done
+    if [ -s "$output_file" ] ; then
+        printf "\nChecking local devices for promiscious mode.\n"
+        cat "$output_file"
+    fi
+    rm -f "$output_file"
+    # remote devices
+    for LL in $(grep "$(date +"%b %e")" /var/log/messages \
+              | grep "kernel: device .* entered promiscuous mode" \
+          | grep -v "$HOSTAME")
+    do
+            echo "$LL" >> $output_file
+    done
+    if [ -s "$output_file" ] ; then
+        printf "\nChecking remote devices for promiscious mode. (raw log entries)\n"
+        cat "$output_file"
+    fi
+    rm -f "$output_file"
+}

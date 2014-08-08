@@ -378,45 +378,11 @@ if [ -s /etc/exports ] ; then
         fi
 fi
 
-# new promisc check
-# rewrite of promisc check to catch all cases even from other hosts if
-# script runs on a central syslog host. Thomas Biege <thomas@suse.de>
-
-# local devices
-> $OUT
-
-for IF in $(grep "$(date +"%b %e")" /var/log/messages \
-          | grep "$HOSTNAME kernel: device .* entered promiscuous mode" \
-          | awk -F' ' '{print $7}')
-do
-        ifconfig $IF | grep -C 2 PROMISC | grep -v '   [RT]X p' >> $OUT
-done
-if [ -s "$OUT" ] ; then
-	printf "\nChecking local devices for promiscious mode.\n"
-	cat "$OUT"
-fi
-
-# remote devices
-> $OUT
-for LL in $(grep "$(date +"%b %e")" /var/log/messages \
-          | grep "kernel: device .* entered promiscuous mode" \
-	  | grep -v "$HOSTAME")
-do
-        echo "$LL" >> $OUT
-done
-if [ -s "$OUT" ] ; then
-	printf "\nChecking remote devices for promiscious mode. (raw log entries)\n"
-	cat "$OUT"
-fi
+# check remote and local devices
+check_promisc
 
 # list loaded modules
-> $OUT
-test -e /proc/modules && { lsmod 2> /dev/null | grep -v '^Module .* Used by$' | awk '{print$1}' | sort > $OUT
- if [ -s "$OUT" ] ; then
-    printf "\nThe following loadable kernel modules are currently installed:\n"
-    cat "$OUT"
- fi
-}
+list_loaded_kernel_modules
 
 # nfs mounts with missing nosuid
 nfs_mounted_with_missing_nosuid
