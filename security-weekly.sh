@@ -25,7 +25,7 @@ TMP2="$TMPDIR/security.tmp2"
 create_secdir
 
 # initialize rmp-md5, sbit, write, device and write-bin
-initialize_secfiles 
+initialize_secfiles $SEC_DATA
 
 # get the ext2 and reiserfs mount points
 MNT=`/bin/mount | grep -E "^/dev/"  | cut -d' ' -f 3 | grep -v "/media" | xargs  echo "/dev/"`

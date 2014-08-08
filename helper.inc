@@ -42,8 +42,10 @@ function guessable_password_email {
 }
 
 # those files are needed 
+# param $1 = SEC_DATA, normally /usr/lib/seccheck
+
 function initialize_secfiles () {
-    for i in "$SEC_DATA/rpm-md5" "$SEC_DATA/sbit" "$SEC_DATA/write" "$SEC_DATA/devices" "$SEC_DATA/write-bin"; do
+    for i in "$1/rpm-md5" "$1/sbit" "$1/write" "$1/devices" "$1/write-bin"; do
         if [ ! -e "$i" ] ; then
             touch "$i"
         fi
