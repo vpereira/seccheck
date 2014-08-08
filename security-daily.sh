@@ -356,27 +356,7 @@ if [ -s "$OUT" ] ; then
         sort -u "$OUT"
 fi
 # File systems should not be globally exported.
-if [ -s /etc/exports ] ; then
-        awk '{
-                if (($1 ~ /^#/) || ($1 ~ /^$/))
-                        next;
-                readonly = 0;
-                for (i = 2; i <= NF; ++i) {
-                        if ($i ~ /^-ro$/)
-                                readonly = 1;
-                        else if ($i !~ /^-/)
-                                next;
-                }
-                if (readonly)
-                        print "File system " $1 " globally exported, read-only.";
-		else
-                        print "File system " $1 " globally exported, read-write.";
-        }' < /etc/exports > $OUT
-        if [ -s "$OUT" ] ; then
-                printf "\nChecking for globally exported file systems.\n"
-                cat "$OUT"
-        fi
-fi
+check_for_globally_exported_fs
 
 # check remote and local devices
 check_promisc

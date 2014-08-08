@@ -241,3 +241,31 @@ function check_promisc () {
     fi
     rm -f "$output_file"
 }
+
+function check_for_globally_exported_fs () {
+
+    output_file=`mktemp -t globally_exported_fs.XXXX` # TEMPDIR is set but not exported.. does it work?
+
+    if [ -s /etc/exports ] ; then
+            awk '{
+                    if (($1 ~ /^#/) || ($1 ~ /^$/))
+                            next;
+                    readonly = 0;
+                    for (i = 2; i <= NF; ++i) {
+                            if ($i ~ /^-ro$/)
+                                    readonly = 1;
+                            else if ($i !~ /^-/)
+                                    next;
+                    }
+                    if (readonly)
+                            print "File system " $1 " globally exported, read-only.";
+            else
+                            print "File system " $1 " globally exported, read-write.";
+            }' < /etc/exports > $output_file
+            if [ -s "$output_file" ] ; then
+                    printf "\nChecking for globally exported file systems.\n"
+                    cat "$output_file"
+            fi
+            rm -f "$output_file"
+    fi
+}
