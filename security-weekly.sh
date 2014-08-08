@@ -36,7 +36,7 @@ set_mailer
 check_guessable_passwords "extended"
 
 # neverlogin check
-check_neverlogin
+check_neverlogin $SEC_BIN $OUT
 
 check_suid_gid $MNT
 

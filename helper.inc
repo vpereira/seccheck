@@ -50,12 +50,19 @@ function initialize_secfiles () {
     done
 }
 
+# params 
+# $1 = directory for checkneverlogin
+# $2 = file to receive the redirected output
 function check_neverlogin () {
-    $SEC_BIN/checkneverlogin > "$OUT"
-    if [ -s "$OUT" ] ; then
+    bin_path = $1
+    output_file = $2
+
+    $bin_path/checkneverlogin > "$output_file"
+    if [ -s "$output_file" ] ; then
 	    printf "\nPlease check and perhaps disable the following unused accounts:\n"
-	    cat "$OUT"
+	    cat $output_file
     fi
+    rm -f $output_file
 }
 
 # use john the ripper to check guessable passwords
