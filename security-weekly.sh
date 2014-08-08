@@ -10,7 +10,7 @@
 
 . /etc/sysconfig/seccheck
 
-. /basic.inc
+. basic.inc
 
 source helper.inc
 

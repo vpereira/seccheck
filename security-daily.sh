@@ -9,7 +9,7 @@
 #
 # TODO: maybe directory writable checks for jobs run in crontab
 #
-. /basic.inc
+. basic.inc
 
 source helper.inc
 

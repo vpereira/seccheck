@@ -4,5 +4,4 @@ function guessable_password_email {
     echo $RET_TMPL
 }
 
-guessable_password_email "foo"
 
