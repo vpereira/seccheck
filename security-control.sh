@@ -24,7 +24,6 @@ fi
 BLURB=`cat blurbs/security_control.txt`
 
 
-
 test -z "$1" && syntax
 
 
@@ -53,67 +52,70 @@ for i in "$OLD1" "$OLD2" "$OLD3" ; do
     fi
 done
 
-test "$1" = "daily" && (
- /bin/sh "$SEC_BIN/security-daily.sh" 1> "$OUT1"
- /usr/bin/diff -q -w "$OLD1" "$OUT1" 1> /dev/null || (
-    {
-	cat <<-EOF
-	To: $SECCHK_USER
-	Subject: Local Daily Security for `hostname`: Changes
+case "$1" in
 
-	Daily security check $VERSION by Marc Heuse <marc@suse.de>
-	$BLURB
+    'daily') 
+         /bin/sh "$SEC_BIN/security-daily.sh" 1> "$OUT1"
+         /usr/bin/diff -q -w "$OLD1" "$OUT1" 1> /dev/null || (
+            {
+            cat <<-EOF
+            To: $SECCHK_USER
+            Subject: Local Daily Security for `hostname`: Changes
 
-	Changes in your daily security configuration of `hostname`:
+            Daily security check $VERSION by Marc Heuse <marc@suse.de>
+            $BLURB
 
-EOF
+            Changes in your daily security configuration of `hostname`:
 
-      /usr/bin/diff -u -w "$OLD1" "$OUT1" | sed 's/^@@.*/\
-* Changes (+: new entries, -: removed entries):\
-	/' | egrep '^[+*-]|^$' |sed 's/^+++/NEW:/' | sed 's/^---/OLD:/' | sed 's/^[+-]/& /'
-    } | $MAILER "$SECCHK_USER"
-    /bin/mv "$OUT1" "$OLD1"
- )
- rm -f "$OUT1"
-)
+        EOF
 
-test "$1" = "weekly" && (
- /bin/sh "$SEC_BIN/security-weekly.sh" 1> "$OUT2"
- if [ -s "$OUT2" ]; then
-    {
-      	cat <<-EOF
-	To: $SECCHK_USER
-	Subject: Local Weekly Security for `hostname`: Changes
+              /usr/bin/diff -u -w "$OLD1" "$OUT1" | sed 's/^@@.*/\
+        * Changes (+: new entries, -: removed entries):\
+            /' | egrep '^[+*-]|^$' |sed 's/^+++/NEW:/' | sed 's/^---/OLD:/' | sed 's/^[+-]/& /'
+            } | $MAILER "$SECCHK_USER"
+            /bin/mv "$OUT1" "$OLD1"
+         )
+         rm -f "$OUT1"
+    ;;
 
-	Weekly security check $VERSION by Marc Heuse <marc@suse.de>
-	$BLURB
+    'weekly')
+         /bin/sh "$SEC_BIN/security-weekly.sh" 1> "$OUT2"
+         if [ -s "$OUT2" ]; then
+            {
+                cat <<-EOF
+            To: $SECCHK_USER
+            Subject: Local Weekly Security for `hostname`: Changes
 
-	Changes in your weekly security configuration of `hostname`:
+            Weekly security check $VERSION by Marc Heuse <marc@suse.de>
+            $BLURB
 
-EOF
-      cat "$OUT2"
-    } | $MAILER "$SECCHK_USER"
-    mv "$OUT2" "$OLD2"
- fi
- rm -f "$OUT2"
-)
+            Changes in your weekly security configuration of `hostname`:
 
-test "$1" = "monthly" && (
- test -s "$OLD1" || /bin/sh "$SEC_BIN/security-daily.sh" 1> "$OLD1"
- test -e "$SEC_DATA/devices" || /bin/sh "$SEC_BIN/security-weekly.sh" 1> "$OLD2"
- {
- 	cat <<-EOF
-	To: $SECCHK_USER
-	Subject: Local Monthly Security for `hostname`: Complete
+        EOF
+              cat "$OUT2"
+            } | $MAILER "$SECCHK_USER"
+            mv "$OUT2" "$OLD2"
+         fi
+         rm -f "$OUT2"
+    ;;
 
-	Monthly security check $VERSION by Marc Heuse <marc@suse.de>
-	$BLURB
+    'monthly')
+         test -s "$OLD1" || /bin/sh "$SEC_BIN/security-daily.sh" 1> "$OLD1"
+         test -e "$SEC_DATA/devices" || /bin/sh "$SEC_BIN/security-weekly.sh" 1> "$OLD2"
+         {
+            cat <<-EOF
+            To: $SECCHK_USER
+            Subject: Local Monthly Security for `hostname`: Complete
 
-	Monthly security check $VERSION by Marc Heuse <marc@suse.de>
+            Monthly security check $VERSION by Marc Heuse <marc@suse.de>
+            $BLURB
 
-EOF
-      /bin/sh "$SEC_BIN/security-monthly.sh"
- } | tee "$OLD3" | $MAILER "$SECCHK_USER"
-)
+            Monthly security check $VERSION by Marc Heuse <marc@suse.de>
 
+        EOF
+              /bin/sh "$SEC_BIN/security-monthly.sh"
+         } | tee "$OLD3" | $MAILER "$SECCHK_USER"
+    ;;
+ esac
+ 
 exit 0
