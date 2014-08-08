@@ -45,14 +45,6 @@ awk -F: '{
                 printf("Login %s has no password.\n", $1);
         else if ($2 !~ /^[x*!]+$/)
 		printf("Login %s has a real password (it is not shadowed).\n", $1);
-#if ($2 != "" && length($2) != 13 && ($10 ~ /.*sh$/ || $10 == "") &&
-#   ($2 !~ /^\$[0-9a-f]+\$/)) {
-#       if (system("test -d "$9" -a ! -r "$9"") == 0)
-#          printf("Login %s if off but still has valid shell and home directory is unreadable\n\t by root; cannot check for existance of alternate access files.\n", $1);
-#       else if (system("for file in .ssh .rhosts .shosts .klogin;
-#               do if test -e "$9"/$file; then if ((ls -ld "$9"/$file | cut -b 2-10 | grep -q r) && (test ! -O "$9"/$file)) ; then exit 1; fi; fi; done"))
-#                  printf("Login %s is off but still has a valid shell and alternate access files in\n\t home directory are still readable.\n",$1);
-#}
         if ($3 == 0 && $1 != "root")
                 printf("Login %s has a user id of 0.\n", $1);
         if ($3 == 1 && $1 != "bin")
@@ -325,27 +317,7 @@ if [ -s "$OUT" ] ; then
         printf "\nChecking home directories.\n"
         sort -u "$OUT"
 fi
-# Files that should not be owned by someone else or readable.
-#list=".netrc .rhosts .shosts .Xauthority .pgp/secring.pgp .ssh/identity .ssh/random_seed"
-#awk -F: '/^[^+-]/ { print $1 " " $6 }' /etc/passwd | \
-#while read uid homedir; do
-#        for f in $list ; do
-#                file=${homedir}/${f}
-#                if [ -f "$file" ] ; then
-#                        printf "$uid $f `ls -ldcbg $file`\n"
-#                fi
-#        done
-#done |
-#awk '$1 != $5 && $5 != "root" \
-#        { print "user " $1 " " $2 " : file is owned by " $5 }
-#     $3 ~ /^-...r/ \
-#        { print "user " $1 " " $2 " : file is group readable" }
-#     $3 ~ /^-......r/ \
-#        { print "user " $1 " " $2 " : file is other readable" }
-#     $3 ~ /^-....w/ \
-#        { print "user " $1 " " $2 " : file is group writeable" }
-#     $3 ~ /^-.......w/ \
-#        { print "user " $1 " " $2 " : file is other writeable" }' > $OUT
+
 # Files that should not be owned by someone else or writeable.
 list=".bashrc .bash_profile .bash_login .bash_logout .cshrc .emacs .exrc \
 .forward .klogin .login .logout .profile .tcshrc .fvwmrc .inputrc .kshrc \

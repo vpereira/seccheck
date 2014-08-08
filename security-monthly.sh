@@ -13,24 +13,26 @@ run_sysconfig_seccheck
 
 
 OLD1="$SEC_VAR/security-report-daily"
-OLD2="$SEC_VAR/security-report-weekly"
-OLD3="$SEC_VAR/security-report-monthly"
+#OLD2="$SEC_VAR/security-report-weekly"
+#OLD3="$SEC_VAR/security-report-monthly"
 
+# create SEC_DATA and SEC_VAR. directories used to store and persist data
 create_secdir
 
-for i in "$OLD1" "$OLD2" "$OLD3" ; do
-    if [ "$i" != "" ]; then
-        if [ ! -e "$i" ]; then
-    	    touch "$i"
-        fi
-    fi
-done
+# initialize rmp-md5, sbit, write, device and write-bin
+initialize_secfiles $SEC_DATA
 
-for i in "$SEC_DATA/rpm-md5" "$SEC_DATA/sbit" "$SEC_DATA/write" "$SEC_DATA/devices" ; do
-    if [ ! -e "$i" ] ; then
-        touch "$i"
-    fi
-done
+# XXX: is it really necessary?
+if [ ! -e "$OLD1" ];then
+    touch "$OLD1"
+fi
+#for i in "$OLD1" "$OLD2" "$OLD3" ; do
+#    if [ "$i" != "" ]; then
+#        if [ ! -e "$i" ]; then
+#    	    touch "$i"
+#        fi
+#    fi
+#done
 
 echo -e '\nNOTE: have you checked http://www.novell.com/products/security.html for security updates?!\n'
 
@@ -55,8 +57,5 @@ cat "$SEC_DATA/rpm-md5"
 
 echo -e '\nComplete list of (char/block) devices:'
 cat "$SEC_DATA/devices"
-
-#echo -e '\nComplete list of x:\n'
-#cat "$SEC_DATA/perms"
 
 exit 0
