@@ -41,7 +41,22 @@ function guessable_password_email {
     echo $RET_TMPL
 }
 
+# those files are needed 
+function initialize_secfiles () {
+    for i in "$SEC_DATA/rpm-md5" "$SEC_DATA/sbit" "$SEC_DATA/write" "$SEC_DATA/devices" "$SEC_DATA/write-bin"; do
+        if [ ! -e "$i" ] ; then
+            touch "$i"
+        fi
+    done
+}
 
+function check_neverlogin () {
+    $SEC_BIN/checkneverlogin > "$OUT"
+    if [ -s "$OUT" ] ; then
+	    printf "\nPlease check and perhaps disable the following unused accounts:\n"
+	    cat "$OUT"
+    fi
+}
 
 # use john the ripper to check guessable passwords
 # if you pass "quick" as argument it will simple try to find easy 

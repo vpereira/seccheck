@@ -24,12 +24,8 @@ TMP2="$TMPDIR/security.tmp2"
 
 create_secdir
 
-# init
-for i in "$SEC_DATA/rpm-md5" "$SEC_DATA/sbit" "$SEC_DATA/write" "$SEC_DATA/devices" "$SEC_DATA/write-bin"; do
-    if [ ! -e "$i" ] ; then
-        touch "$i"
-    fi
-done
+# initialize rmp-md5, sbit, write, device and write-bin
+initialize_secfiles 
 
 # get the ext2 and reiserfs mount points
 MNT=`/bin/mount | grep -E "^/dev/"  | cut -d' ' -f 3 | grep -v "/media" | xargs  echo "/dev/"`
@@ -40,11 +36,7 @@ set_mailer
 check_guessable_passwords "extended"
 
 # neverlogin check
-$SEC_BIN/checkneverlogin > "$OUT"
-if [ -s "$OUT" ] ; then
-	printf "\nPlease check and perhaps disable the following unused accounts:\n"
-	cat "$OUT"
-fi
+check_neverlogin
 
 check_suid_gid $MNT
 
