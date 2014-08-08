@@ -269,3 +269,18 @@ function check_for_globally_exported_fs () {
             rm -f "$output_file"
     fi
 }
+
+
+function check_mailboxes_owned_by_user_and_unreadable () {
+
+    output_file=`mktemp -t globally_exported_fs.XXXX` # TEMPDIR is set but not exported.. does it work?
+    ls -cl /var/spool/mail | sed 1d | \
+    awk '$3 != $9 \
+        { print "user " $9 " mailbox is owned by " $3 }
+     $1 != "-rw-------" \
+        { print "user " $9 " mailbox is " $1 ", group " $4 }' > $output_file
+    if [ -s "$output_file" ] ; then
+        printf "\nChecking mailbox ownership.\n"
+        sort -u "$output_file"
+    fi
+}
