@@ -350,16 +350,6 @@ fi
 # Mailboxes should be owned by user and unreadable.
 check_mailboxes_owned_by_user_and_unreadable
 
-ls -cl /var/spool/mail | sed 1d | \
-awk '$3 != $9 \
-        { print "user " $9 " mailbox is owned by " $3 }
-     $1 != "-rw-------" \
-        { print "user " $9 " mailbox is " $1 ", group " $4 }' > $OUT
-if [ -s "$OUT" ] ; then
-        printf "\nChecking mailbox ownership.\n"
-        sort -u "$OUT"
-fi
-
 # File systems should not be globally exported.
 check_for_globally_exported_fs
 
