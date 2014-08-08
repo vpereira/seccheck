@@ -53,10 +53,10 @@ function initialize_secfiles () {
 
 # params 
 # $1 = directory for checkneverlogin
-# $2 = file to receive the redirected output
 function check_neverlogin () {
-    bin_path = $1
-    output_file = $2
+    bin_path=$1
+    # 
+    output_file=`mktemp -t neverlogin.XXXX` # TEMPDIR is set but not exported.. does it work?
 
     $bin_path/checkneverlogin > "$output_file"
     if [ -s "$output_file" ] ; then
@@ -100,7 +100,7 @@ function check_guessable_passwords () {
 # param mount points and output-file
 function check_suid_sgid () {
     mnt_point=$1
-    output_file=$2
+    output_file=`mktemp -t suid_sgid.XXXX` # TEMPDIR is set but not exported.. does it work?
     ( nice -n 1 find $mnt_point -mount \( -perm -04000 -o -perm -02000 \) -type f | sort | \
         xargs --no-run-if-empty ls -cdl --time-style=long-iso -- > "$SEC_DATA/sbit.new" ) 2> /dev/null
     diff -uw "$SEC_DATA/sbit" "$SEC_DATA/sbit.new" | \
@@ -116,7 +116,7 @@ function check_suid_sgid () {
 # param mount points and output-file
 function check_writable_executable () {
     mnt_point=$1
-    output_file=$2
+    output_file=`mktemp -t writable_executable.XXXX` # TEMPDIR is set but not exported.. does it work?
     ( nice -n 1 find $mnt_point -mount \( -perm -30 -o -perm -3 \) -type f | sort | \
         xargs --no-run-if-empty ls -cdl --time-style=long-iso -- > "$SEC_DATA/write-bin.new" ) 2> /dev/null
     diff -uw "$SEC_DATA/write-bin" "$SEC_DATA/write-bin.new" | \
@@ -132,7 +132,7 @@ function check_writable_executable () {
 # param mount points and output-file
 function check_world_writable () {
     mnt_point=$1
-    output_file=$2
+    output_file=`mktemp -t world_writable.XXXX` # TEMPDIR is set but not exported.. does it work?
     ( nice -n 1 find $mnt_point -mount -perm -2 \( -type f -o -type d \) -not -perm -01000 | sort > "$SEC_DATA/write.new" ) 2> /dev/null
     diff -uw "$SEC_DATA/write" "$SEC_DATA/write.new" | \
         egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
@@ -147,7 +147,7 @@ function check_world_writable () {
 # param mount points and output-file
 function check_new_devices () {
     mnt_point=$1
-    output_file=$2
+    output_file=`mktemp -t new_devices.XXXX` # TEMPDIR is set but not exported.. does it work?
     # warning: bug #51004 ls output depends on root's locale and may be less
     # then 10 tokens!
     ( nice -n 1 find $mnt_point -mount -type c -or -type b | xargs --no-run-if-empty ls -cdl --time-style=long-iso -- | \
@@ -165,7 +165,7 @@ function check_new_devices () {
 
 # param output-file
 function check_md5 () {
-    output_file=$1
+    output_file=`mktemp -t md5.XXXX` # TEMPDIR is set but not exported.. does it work?
     nice -n 1 rpm -Va 2> /dev/null | grep '^5' > "$SEC_DATA/rpm-md5.new"
     diff -uw "$SEC_DATA/rpm-md5" "$SEC_DATA/rpm-md5.new" | \
         egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
@@ -176,4 +176,3 @@ function check_md5 () {
     mv "$SEC_DATA/rpm-md5.new" "$SEC_DATA/rpm-md5"
     rm -f $output_file
 }
-
