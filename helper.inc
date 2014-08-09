@@ -1,7 +1,7 @@
 #
 # functions used by all modules
 #
-# param: program name
+# param: prefix for filename
 function set_tmpdir () {
     TMPDIR=`/bin/mktemp -d /tmp/$1.XXXXXX` || exit 1
 }
