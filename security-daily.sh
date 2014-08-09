@@ -153,34 +153,8 @@ check_rhosts
 # or writeable.
 check_home_directories_owners
 
-
 # Files that should not be owned by someone else or writeable.
-list=".bashrc .bash_profile .bash_login .bash_logout .cshrc .emacs .exrc \
-.forward .klogin .login .logout .profile .tcshrc .fvwmrc .inputrc .kshrc \
-.nexrc .screenrc .ssh .ssh/config .ssh/authorized_keys .ssh/environment \
-.ssh/known_hosts .ssh/rc .twmrc .xsession .xinitrc .Xdefaults .rhosts \
-.shosts .Xauthority .pgp/secring.pgp .ssh/identity .ssh/random_seed \
-.pgp/randseed.bin .netrc .exrc .vimrc .viminfo"
-awk -F: '/^[^+-]/ { print $1 " " $6 }' /etc/passwd | \
-while read uid homedir; do
-        for f in $list ; do
-                file=${homedir}/${f}
-                if [ -f "$file" ] ; then
-                        printf "$uid $f `ls -ldcb $file|sed 's/[%\]/_/g'`\n"
-                fi
-        done
-done |
-awk '$1 != $5 && $5 != "root" \
-        { print "user " $1 " " $2 " : file is owned by " $5 }
-     $3 ~ /^-....w/ \
-        { print "user " $1 " " $2 " : file is group writeable" }
-     $3 ~ /^-.......w/ \
-        { print "user " $1 " " $2 " : file is other writeable" }' >> $OUT
-if [ -s "$OUT" ] ; then
-        printf "\nChecking dot files.\n"
-        sort -u "$OUT"
-fi
-
+check_special_files_owner
 
 # Mailboxes should be owned by user and unreadable.
 check_mailboxes_owned_by_user_and_unreadable

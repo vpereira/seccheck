@@ -289,27 +289,3 @@ function check_mailboxes_owned_by_user_and_unreadable () {
     fi
     rm -f "$output_file"
 }
-
-
-# Check home directories.  Directories should not be owned by someone else
-function check_home_directories_owners () {
-    output_file=`mktemp -t home_directories_owners.XXXX` # TEMPDIR is set but not exported.. does it work?
-    awk -F: '/^[^+-]/ { print $1 " " $6 }' /etc/passwd | \
-    while read uid homedir; do
-            if [ -d ${homedir}/ ] ; then
-                    file=`ls -ldb ${homedir}|sed 's/[%\]/_/g'`
-                    printf "$uid $file\n"
-            fi
-    done |
-    awk '$1 != $4 && $4 != "root" \
-            { print "user " $1 " : home directory is owned by " $4 }
-         $2 ~ /^-....w/ \
-            { print "user " $1 " : home directory is group writeable" }
-         $2 ~ /^-.......w/ \
-            { print "user " $1 " : home directory is other writeable" }' > $output_file
-    if [ -s "$output_file" ] ; then
-            printf "\nChecking home directories.\n"
-            sort -u "$output_file"
-    fi
-    rm -f "$output_file"
-}

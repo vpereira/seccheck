@@ -50,3 +50,57 @@ function check_rhosts () {
             cat "$output_file"
     fi
 }
+
+# Check home directories.  Directories should not be owned by someone else
+function check_home_directories_owners () {
+    output_file=`mktemp -t home_directories_owners.XXXX` # TEMPDIR is set but not exported.. does it work?
+    awk -F: '/^[^+-]/ { print $1 " " $6 }' /etc/passwd | \
+    while read uid homedir; do
+            if [ -d ${homedir}/ ] ; then
+                    file=`ls -ldb ${homedir}|sed 's/[%\]/_/g'`
+                    printf "$uid $file\n"
+            fi
+    done |
+    awk '$1 != $4 && $4 != "root" \
+            { print "user " $1 " : home directory is owned by " $4 }
+         $2 ~ /^-....w/ \
+            { print "user " $1 " : home directory is group writeable" }
+         $2 ~ /^-.......w/ \
+            { print "user " $1 " : home directory is other writeable" }' > $output_file
+    if [ -s "$output_file" ] ; then
+            printf "\nChecking home directories.\n"
+            sort -u "$output_file"
+    fi
+    rm -f "$output_file"
+}
+
+
+# Files that should not be owned by someone else or writeable.
+function check_special_files_owner () {
+    output_file=`mktemp -t specia_files_owner.XXXX` # TEMPDIR is set but not exported.. does it work?
+    list=".bashrc .bash_profile .bash_login .bash_logout .cshrc .emacs .exrc \
+    .forward .klogin .login .logout .profile .tcshrc .fvwmrc .inputrc .kshrc \
+    .nexrc .screenrc .ssh .ssh/config .ssh/authorized_keys .ssh/environment \
+    .ssh/known_hosts .ssh/rc .twmrc .xsession .xinitrc .Xdefaults .rhosts \
+    .shosts .Xauthority .pgp/secring.pgp .ssh/identity .ssh/random_seed \
+    .pgp/randseed.bin .netrc .exrc .vimrc .viminfo"
+    awk -F: '/^[^+-]/ { print $1 " " $6 }' /etc/passwd | \
+    while read uid homedir; do
+            for f in $list ; do
+                    file=${homedir}/${f}
+                    if [ -f "$file" ] ; then
+                            printf "$uid $f `ls -ldcb $file|sed 's/[%\]/_/g'`\n"
+                    fi
+            done
+    done |
+    awk '$1 != $5 && $5 != "root" \
+            { print "user " $1 " " $2 " : file is owned by " $5 }
+         $3 ~ /^-....w/ \
+            { print "user " $1 " " $2 " : file is group writeable" }
+         $3 ~ /^-.......w/ \
+            { print "user " $1 " " $2 " : file is other writeable" }' >> $output_file
+    if [ -s "$output_file" ] ; then
+            printf "\nChecking dot files.\n"
+            sort -u "$output_file"
+    fi
+}
