@@ -15,6 +15,7 @@ function syntax () {
     exit 1
 }
 
+# set which mailer should be used
 function set_mailer () {
     test -z "$MAILER" && test -x "/usr/sbin/sendmail" && MAILER="/usr/sbin/sendmail"
     test -z "$MAILER" && test -x "/usr/bin/mailx" && MAILER="/usr/bin/mailx"
@@ -23,6 +24,7 @@ function set_mailer () {
     test -n "$MAILER" && export MAILER
 }
 
+# create necessary directories
 function create_secdir () {
     if [ ! -d "$SEC_VAR" ]; then
         rm -rf "$SEC_VAR"
@@ -36,6 +38,8 @@ function create_secdir () {
 }
 
 # param a username
+# template engine to substitute a variable in a text and prepare it
+# to be sent per email
 function guessable_password_email {
     ret_tmpl=`sed "s/{guessable_account}/$1/" blurbs/guessable_passwd.txt`
     echo $ret_tmpl
@@ -209,6 +213,7 @@ function list_loaded_kernel_modules () {
     rm -f "$output_file"
 }
 
+# promisc check to catch all cases even from other hosts if
 function check_promisc () {
     # new promisc check
     # rewrite of promisc check to catch all cases even from other hosts if
@@ -282,4 +287,29 @@ function check_mailboxes_owned_by_user_and_unreadable () {
         printf "\nChecking mailbox ownership.\n"
         sort -u "$output_file"
     fi
+    rm -f "$output_file"
+}
+
+
+# Check home directories.  Directories should not be owned by someone else
+function check_home_directories_owners () {
+    output_file=`mktemp -t home_directories_owners.XXXX` # TEMPDIR is set but not exported.. does it work?
+    awk -F: '/^[^+-]/ { print $1 " " $6 }' /etc/passwd | \
+    while read uid homedir; do
+            if [ -d ${homedir}/ ] ; then
+                    file=`ls -ldb ${homedir}|sed 's/[%\]/_/g'`
+                    printf "$uid $file\n"
+            fi
+    done |
+    awk '$1 != $4 && $4 != "root" \
+            { print "user " $1 " : home directory is owned by " $4 }
+         $2 ~ /^-....w/ \
+            { print "user " $1 " : home directory is group writeable" }
+         $2 ~ /^-.......w/ \
+            { print "user " $1 " : home directory is other writeable" }' > $output_file
+    if [ -s "$output_file" ] ; then
+            printf "\nChecking home directories.\n"
+            sort -u "$output_file"
+    fi
+    rm -f "$output_file"
 }

@@ -151,23 +151,8 @@ check_rhosts
 
 # Check home directories.  Directories should not be owned by someone else
 # or writeable.
-awk -F: '/^[^+-]/ { print $1 " " $6 }' /etc/passwd | \
-while read uid homedir; do
-        if [ -d ${homedir}/ ] ; then
-                file=`ls -ldb ${homedir}|sed 's/[%\]/_/g'`
-                printf "$uid $file\n"
-        fi
-done |
-awk '$1 != $4 && $4 != "root" \
-        { print "user " $1 " : home directory is owned by " $4 }
-     $2 ~ /^-....w/ \
-        { print "user " $1 " : home directory is group writeable" }
-     $2 ~ /^-.......w/ \
-        { print "user " $1 " : home directory is other writeable" }' > $OUT
-if [ -s "$OUT" ] ; then
-        printf "\nChecking home directories.\n"
-        sort -u "$OUT"
-fi
+check_home_directories_owners
+
 
 # Files that should not be owned by someone else or writeable.
 list=".bashrc .bash_profile .bash_login .bash_logout .cshrc .emacs .exrc \
@@ -211,7 +196,6 @@ list_loaded_kernel_modules
 
 # nfs mounts with missing nosuid
 nfs_mounted_with_missing_nosuid
-
 
 # display programs with bound sockets
 display_programs_with_bound_sockets
