@@ -12,3 +12,18 @@ function no_exec_in_etcaliases () {
 
 
 }
+
+
+function check_no_plus () {
+    list="/etc/hosts.equiv /etc/shosts.equiv /etc/hosts.lpd"
+    for f in $list ; do
+            if [ -s "$f" ] ; then
+                    awk '{
+                            if ($0 ~ /^\+@.*$/)
+                                    next;
+                            if ($0 ~ /^\+.*$/)
+                                    printf("\nPlus sign in the file %s\n", FILENAME);
+                    }' $f
+            fi
+    done
+}

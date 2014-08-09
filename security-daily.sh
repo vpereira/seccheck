@@ -144,17 +144,8 @@ check_ftpusers
 no_exec_in_etcaliases 
 
 # Files that should not have + signs.
-list="/etc/hosts.equiv /etc/shosts.equiv /etc/hosts.lpd"
-for f in $list ; do
-        if [ -s "$f" ] ; then
-                awk '{
-                        if ($0 ~ /^\+@.*$/)
-                                next;
-                        if ($0 ~ /^\+.*$/)
-                                printf("\nPlus sign in the file %s\n", FILENAME);
-                }' $f
-        fi
-done
+check_no_plus
+
 # .rhosts check
 awk -F: '{ print $1 " " $6 }' /etc/passwd |
 while read uid homedir; do
