@@ -27,3 +27,26 @@ function check_no_plus () {
             fi
     done
 }
+
+# .rhosts check
+function check_rhosts () {
+    output_file=`mktemp -t check_rhosts.XXXX` # TEMPDIR is set but not exported.. does it work?
+    awk -F: '{ print $1 " " $6 }' /etc/passwd |
+    while read uid homedir; do
+            for j in .rhosts .shosts; do
+                    if [ -s ${homedir}/$j ] ; then
+                            rhost=`ls -lcdbg ${homedir}/$j|sed 's/[%\]/_/g'`
+                printf "$uid: $rhost\n"
+                test -f "$j" && { # still a race, however ...
+                    if egrep \\+ ${homedir}/$j > /dev/null ; then
+                    printf "\t(has got a plus (+) sign!)\n"
+                    fi
+                }
+                    fi
+            done
+    done > $output_file
+    if [ -s "$output_file" ] ; then
+            printf "\nChecking for users with .rhosts/.shosts files.\n"
+            cat "$output_file"
+    fi
+}

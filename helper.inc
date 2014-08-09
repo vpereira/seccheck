@@ -272,7 +272,6 @@ function check_for_globally_exported_fs () {
 
 
 function check_mailboxes_owned_by_user_and_unreadable () {
-
     output_file=`mktemp -t globally_exported_fs.XXXX` # TEMPDIR is set but not exported.. does it work?
     ls -cl /var/spool/mail | sed 1d | \
     awk '$3 != $9 \

@@ -147,24 +147,8 @@ no_exec_in_etcaliases
 check_no_plus
 
 # .rhosts check
-awk -F: '{ print $1 " " $6 }' /etc/passwd |
-while read uid homedir; do
-        for j in .rhosts .shosts; do
-                if [ -s ${homedir}/$j ] ; then
-                        rhost=`ls -lcdbg ${homedir}/$j|sed 's/[%\]/_/g'`
-			printf "$uid: $rhost\n"
-			test -f "$j" && { # still a race, however ...
-			    if egrep \\+ ${homedir}/$j > /dev/null ; then
-				printf "\t(has got a plus (+) sign!)\n"
-			    fi
-			}
-                fi
-        done
-done > $OUT
-if [ -s "$OUT" ] ; then
-        printf "\nChecking for users with .rhosts/.shosts files.\n"
-        cat "$OUT"
-fi
+check_rhosts
+
 # Check home directories.  Directories should not be owned by someone else
 # or writeable.
 awk -F: '/^[^+-]/ { print $1 " " $6 }' /etc/passwd | \
