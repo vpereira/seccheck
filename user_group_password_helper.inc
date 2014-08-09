@@ -128,3 +128,21 @@ function check_group () {
     fi
     rm -f "$output_file"
 }
+
+function check_ftpusers () {
+    if [ -s /etc/ftpusers ]; then
+        > $OUT
+        grep -q '^root$' /etc/ftpusers || echo root >> $OUT
+        grep -q '^bin$' /etc/ftpusers || echo bin >> $OUT
+            grep -q '^uucp$' /etc/ftpusers || echo uucp >> $OUT
+            grep -q '^daemon$' /etc/ftpusers || echo daemon >> $OUT
+            grep -q '^nobody$' /etc/ftpusers || echo nobody >> $OUT
+            grep -q '^lp$' /etc/ftpusers || echo lp >> $OUT
+            grep -q '^man$' /etc/ftpusers || echo man >> $OUT
+        if [ -s "$OUT" ] ; then
+            printf "\nThe following system accounts are missing in /etc/ftpusers:\n"
+            cat "$OUT"
+        fi
+    fi
+}
+

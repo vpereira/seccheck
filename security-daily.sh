@@ -13,6 +13,7 @@
 
 source helper.inc
 source user_group_password_helper.inc
+source misc_helper.inc
 
 set_tmpdir $0
 
@@ -132,32 +133,16 @@ if [ $umaskset = "no" -o -s "$TMP2" ] ; then
                 printf "\nRoot sh startup files do not set the umask.\n"
         fi
 fi
-#
+
+
 # Misc. file checks
-#
 # root/uucp/bin/daemon etc. should be in /etc/ftpusers.
-if [ -s /etc/ftpusers ]; then
-	> $OUT
-	grep -q '^root$' /etc/ftpusers || echo root >> $OUT
-	grep -q '^bin$' /etc/ftpusers || echo bin >> $OUT
-        grep -q '^uucp$' /etc/ftpusers || echo uucp >> $OUT
-        grep -q '^daemon$' /etc/ftpusers || echo daemon >> $OUT
-        grep -q '^nobody$' /etc/ftpusers || echo nobody >> $OUT
-        grep -q '^lp$' /etc/ftpusers || echo lp >> $OUT
-        grep -q '^man$' /etc/ftpusers || echo man >> $OUT
-	if [ -s "$OUT" ] ; then
-	    printf "\nThe following system accounts are missing in /etc/ftpusers:\n"
-	    cat "$OUT"
-	fi
-fi
+check_ftpusers
+
+
 # executables should not be in the /etc/aliases file.
-if [ -s /etc/aliases ]; then
-    grep -v '^#' /etc/aliases | grep '|' > $OUT
-    if [ -s "$OUT" ] ; then
-            printf "\nThe following programs are executed in your mail via /etc/aliases (bad!):\n"
-            cat "$OUT"
-    fi
-fi
+no_exec_in_etcaliases 
+
 # Files that should not have + signs.
 list="/etc/hosts.equiv /etc/shosts.equiv /etc/hosts.lpd"
 for f in $list ; do
