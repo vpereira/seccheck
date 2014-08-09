@@ -33,34 +33,6 @@ check_shadow
 # /etc/group checking
 check_group
 
-GRP=/etc/group
-awk -F: '{
-        if ($0 ~ /^[	 ]*$/) {
-                printf("Line %d is a blank line.\n", NR);
-                next;
-        }
-        if ($1 ~ /^[+-]/)
-                next;
-        if (NF != 4)
-                printf("Line %d has the wrong number of fields.\n", NR+1);
-        if ($1 !~ /^[A-Za-z0-9][A-Za-z0-9_-]*$/)
-                printf("Group %s has non-alphanumeric characters.\n", $1);
-        if (length($1) > 32)
-                printf("Group %s has more than 32 characters.\n", $1);
-        if ($3 !~ /[0-9]*/)
-                printf("Login %s has a negative group id.\n", $1);
-        if (length($4) > 0 && $3 < 3)
-		printf("Group %s(%s) has got the following members: %s\n", $1, $3, $4);
-}' < $GRP > $OUT
-if [ -s "$OUT" ] ; then
-        printf "\nChecking the $GRP file:\n"
-        cat "$OUT"
-fi
-awk -F: '{ print $1 }' $GRP | sort | uniq -d > $OUT
-if [ -s "$OUT" ] ; then
-        printf "\n$GRP has duplicate group names.\n"
-        column "$OUT"
-fi
 #
 # checking root's login scrips for secure path and umask
 #
