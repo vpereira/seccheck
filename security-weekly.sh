@@ -18,9 +18,6 @@ set_tmpdir $0
 
 trap 'rm -rf $TMPDIR; exit 1' 0 1 2 3 13 15
 
-# push it to the functions.. no reason to be global
-OUT="$TMPDIR/security.out"
-
 # create SEC_DATA and SEC_VAR. directories used to store and persist data
 create_secdir
 

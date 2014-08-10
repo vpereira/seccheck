@@ -27,22 +27,18 @@ TMP2="$TMPDIR/security.tmp2"
 # /etc/passwd check
 check_passwd
 
-
 # /etc/shadow check
 check_shadow
 
 # /etc/group checking
 check_group
 
-
 # checking root's login scrips for secure path and umask
 check_root_login_scripts
-
 
 # Misc. file checks
 # root/uucp/bin/daemon etc. should be in /etc/ftpusers.
 check_ftpusers
-
 
 # executables should not be in the /etc/aliases file.
 no_exec_in_etcaliases 
@@ -77,7 +73,6 @@ nfs_mounted_with_missing_nosuid
 
 # display programs with bound sockets
 display_programs_with_bound_sockets
-
 
 ####
 #

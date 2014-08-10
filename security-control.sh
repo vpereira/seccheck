@@ -29,13 +29,6 @@ test -z "$1" && syntax
 
 set_mailer
 
-test -z "$MAILER" && echo "Can not find a suitable mailer!"
-test -z "$MAILER" && exit 1
-
-test -z "$SEC_BIN" && SEC_BIN="/usr/lib/secchk"
-test -z "$SEC_VAR" && SEC_VAR="/var/lib/secchk"
-
-SEC_DATA="$SEC_VAR/data"
 OUT1="$SEC_VAR/security-report-daily.new"
 OLD1="$SEC_VAR/security-report-daily"
 OUT2="$SEC_VAR/security-report-weekly.new"
