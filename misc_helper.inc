@@ -104,3 +104,105 @@ function check_special_files_owner () {
             sort -u "$output_file"
     fi
 }
+
+function check_root_login_scripts () {
+    # checking root's login scrips for secure path and umask
+    # XXX: define those files
+    > $OUT
+    > $TMP1
+    > $TMP2
+    rhome=/root
+    umaskset=no
+    list="/etc/csh.cshrc /etc/csh.login"
+    for i in $list ; do
+            if [ -s "$i" ] ; then
+                    if egrep umask $i > /dev/null ; then
+                            umaskset=yes
+                    fi
+                    egrep umask $i |
+                    awk '$2 % 100 < 20 \
+                            { print "Root umask is group writeable" }
+                         $2 % 10 < 2 \
+                            { print "Root umask is other writeable" }' >> $OUT
+                    SAVE_PATH=$PATH
+                    unset PATH 2> /dev/null || PATH="" # redhat ... 
+                    /bin/csh -f -s << end-of-csh > /dev/null 2>&1
+                            test -f "$i" && (	# still a race
+                                source $i
+                                /bin/ls -ldcbg \$path > $TMP1
+                )
+    end-of-csh
+                    PATH=$SAVE_PATH
+                    awk '{
+                            if ($9 ~ /^\.$/) {
+                                    print "The root path includes .";
+                                    next;
+                            }
+                         }
+                         $1 ~ /^d....w/ \
+            { print "Root path directory " $9 " is group writeable." } \
+                         $1 ~ /^d.......w/ \
+            { print "Root path directory " $9 " is other writeable." }' \
+                    < $TMP1 >> $TMP2
+            fi
+    done
+    if [ $umaskset = "no" -o -s "$TMP2" ] ; then
+        sort -u $TMP2 > $OUT
+            printf "\nChecking root csh paths, umask values:\n$list\n"
+            if [ -s "$OUT" ] ; then
+                    cat "$OUT"
+            fi
+            if [ $umaskset = "no" ] ; then
+                    printf "\nRoot csh startup files do not set the umask.\n"
+            fi
+    fi
+    > $OUT
+    > $TMP1
+    > $TMP2
+    rhome=/root
+    umaskset=no
+    list="/etc/profile ${rhome}/.profile ${rhome}/.bashrc ${rhome}/.bash_login"
+    for i in $list; do
+            if [ -s "$i" ] ; then
+                    if egrep umask $i > /dev/null ; then
+                            umaskset=yes
+                    fi
+                    egrep umask $i |
+                    awk '$2 % 100 < 20 \
+                            { print "Root umask is group writeable" } \
+                         $2 % 10 < 2 \
+                            { print "Root umask is other writeable" }' >> $OUT
+                    SAVE_PATH=$PATH
+                    unset PATH 2> /dev/null || PATH="" # redhat again ...
+                    /bin/sh << end-of-sh > /dev/null 2>&1
+                            file "$i" | grep -qw text && . $i
+                            list=\`echo \$PATH | /usr/bin/sed -e 's/:/ /g'\`
+                /bin/ls -ldgbT \$list > $TMP1
+    end-of-sh
+                    PATH=$SAVE_PATH
+                    awk '{
+                            if ($9 ~ /^\.$/) {
+                                    print "The root path includes .";
+                                    next;
+                            }
+                         }
+                         $1 ~ /^d....w/ \
+            { print "Root path directory " $9 " is group writeable." } \
+                         $1 ~ /^d.......w/ \
+            { print "Root path directory " $9 " is other writeable." }' \
+                    < $TMP1 >> $TMP2
+
+            fi
+    done
+    if [ $umaskset = "no" -o -s "$TMP2" ] ; then
+        sort -u $TMP2 > $OUT
+            printf "\nChecking root sh paths, umask values:\n$list\n"
+            if [ -s "$OUT" ] ; then
+                    cat "$OUT"
+            fi
+            if [ $umaskset = "no" ] ; then
+                    printf "\nRoot sh startup files do not set the umask.\n"
+            fi
+    fi
+
+}
