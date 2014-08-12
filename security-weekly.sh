@@ -8,13 +8,18 @@
 # TODO /etc /home /home/.* permissions
 #
 
-. /etc/sysconfig/seccheck
+# TODO re-enable it
+#. /etc/sysconfig/seccheck
 
 . ./basic.inc
 
-source helper.inc
+source ./helper.inc
+source ./user_group_password_helper.inc
+source ./misc_helper.inc
 
-set_tmpdir $0
+
+
+set_tmpdir "security-weekly.sh"
 
 trap 'rm -rf $TMPDIR; exit 1' 0 1 2 3 13 15
 
@@ -36,11 +41,11 @@ check_guessable_passwords "extended"
 # neverlogin check
 check_neverlogin $SEC_BIN
 
-check_suid_gid $MNT
+check_suid_sgid $MNT
 
 check_writable_executable $MNT
 
-check world_writable $MNT
+check_world_writable $MNT
 
 check_new_devices $MNT
 

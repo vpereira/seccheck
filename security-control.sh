@@ -70,7 +70,6 @@ EOF
             } | $MAILER "$SECCHK_USER"
             mv "$OUT2" "$OLD2"
          fi
-         rm -f "$OUT2"
     ;;
 
     'monthly')

@@ -76,7 +76,7 @@ function send_daily_changes () {
 
 EOF
 
-    /usr/bin/diff -u -w "$old1" "$out1" | \sed 's/^@@.*/\ * Changes (+: new entries, -: removed entries):\ /' | \egrep '^[+*-]|^$ |sed 's/^+++/NEW:/' | \ sed 's/^---/OLD:/' | sed 's/^[+-]/& /' | $MAILER "$SECCHK_USER" 
+    /usr/bin/diff -u -w "$old1" "$out1" | \sed 's/^@@.*/\ * Changes (+: new entries, -: removed entries):\ /' | \egrep '^[+*-]|^$' |sed 's/^+++/NEW:/' | \ sed 's/^---/OLD:/' | sed 's/^[+-]/& /' | $MAILER "$SECCHK_USER" 
     /bin/mv "$out1" "$old1"
 }
 
@@ -132,7 +132,7 @@ function check_suid_sgid () {
     local output_file=`mktemp -t suid_sgid.XXXX` # TEMPDIR is set but not exported.. does it work?
     ( nice -n 1 find $mnt_point -mount \( -perm -04000 -o -perm -02000 \) -type f | sort | \
         xargs --no-run-if-empty ls -cdl --time-style=long-iso -- > "$SEC_DATA/sbit.new" ) 2> /dev/null
-    diff -uw "$SEC_DATA/sbit" "$SEC_DATA/sbit.new" | \ egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
+    diff -uw "$SEC_DATA/sbit" "$SEC_DATA/sbit.new" | egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
     if [ -s "$output_file" ] ; then
         printf "\nThe following files are suid/sgid:\n"
         cat "$output_file"
