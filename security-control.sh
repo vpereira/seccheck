@@ -9,7 +9,7 @@ VERSION="v3.0"
 
 . ./basic.inc
 
-source ./helper.inc
+source helper.inc
 
 run_sysconfig_seccheck
 
@@ -49,27 +49,8 @@ case "$1" in
 
     'daily') 
          /bin/sh "$SEC_BIN/security-daily.sh" 1> "$OUT1"
-         /usr/bin/diff -q -w "$OLD1" "$OUT1" 1> /dev/null || (
-         {
-            cat <<-EOF
-            To: $SECCHK_USER
-            Subject: Local Daily Security for `hostname`: Changes
-
-            Daily security check $VERSION by Marc Heuse <marc@suse.de>
-            $BLURB
-
-            Changes in your daily security configuration of `hostname`:
-
-EOF
-
-           /usr/bin/diff -u -w "$OLD1" "$OUT1" | \ 
-               sed 's/^@@.*/\ * Changes (+: new entries, -: removed entries):\ /' | \
-               egrep '^[+*-]|^$' |sed 's/^+++/NEW:/' | sed 's/^---/OLD:/' | sed 's/^[+-]/& /'
-            } | $MAILER "$SECCHK_USER"
-            /bin/mv "$OUT1" "$OLD1"
-         )
-         rm -f "$OUT1"
-    ;;
+         /usr/bin/diff -q -w "$OLD1" "$OUT1" 1> /dev/null || send_daily_changes $OLD1 $OUT1 
+   ;;
 
     'weekly')
          /bin/sh "$SEC_BIN/security-weekly.sh" 1> "$OUT2"

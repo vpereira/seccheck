@@ -134,7 +134,7 @@ function check_root_login_scripts () {
                                 source $i
                                 /bin/ls -ldcbg \$path > $tmp_file1
                 )
-    end-of-csh
+end-of-csh
                     PATH=$SAVE_PATH
                     awk '{
                             if ($9 ~ /^\.$/) {
@@ -181,7 +181,7 @@ function check_root_login_scripts () {
                             file "$i" | grep -qw text && . $i
                             list=\`echo \$PATH | /usr/bin/sed -e 's/:/ /g'\`
                 /bin/ls -ldgbT \$list > $tmp_file1
-    end-of-sh
+end-of-sh
                     PATH=$SAVE_PATH
                     awk '{
                             if ($9 ~ /^\.$/) {

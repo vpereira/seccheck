@@ -15,6 +15,7 @@ function syntax () {
     exit 1
 }
 
+
 # set which mailer should be used
 function set_mailer () {
     test -z "$MAILER" && test -x "/usr/sbin/sendmail" && MAILER="/usr/sbin/sendmail"
@@ -26,6 +27,7 @@ function set_mailer () {
 
 # create necessary directories
 function create_secdir () {
+   
     if [ ! -d "$SEC_VAR" ]; then
         rm -rf "$SEC_VAR"
         mkdir "$SEC_VAR" || exit 1
@@ -35,6 +37,7 @@ function create_secdir () {
         rm -rf "$SEC_DATA"
         mkdir "$SEC_DATA" || exit 1
     fi
+
 }
 
 # param a username
@@ -53,6 +56,28 @@ function initialize_secfiles () {
             touch "$1/$i"
         fi
     done
+}
+
+# daily changes per email
+# params
+# OLD1, OUT1
+function send_daily_changes () {
+    local old1=$1
+    local out1=$2
+    
+    cat <<-EOF
+    To: $SECCHK_USER
+    Subject: Local Daily Security for `hostname`: Changes
+
+    Daily security check $VERSION by Marc Heuse <marc@suse.de>
+    $BLURB
+
+    Changes in your daily security configuration of `hostname`:
+
+EOF
+
+    /usr/bin/diff -u -w "$old1" "$out1" | \sed 's/^@@.*/\ * Changes (+: new entries, -: removed entries):\ /' | \egrep '^[+*-]|^$ |sed 's/^+++/NEW:/' | \ sed 's/^---/OLD:/' | sed 's/^[+-]/& /' | $MAILER "$SECCHK_USER" 
+    /bin/mv "$out1" "$old1"
 }
 
 # params 
@@ -107,8 +132,7 @@ function check_suid_sgid () {
     local output_file=`mktemp -t suid_sgid.XXXX` # TEMPDIR is set but not exported.. does it work?
     ( nice -n 1 find $mnt_point -mount \( -perm -04000 -o -perm -02000 \) -type f | sort | \
         xargs --no-run-if-empty ls -cdl --time-style=long-iso -- > "$SEC_DATA/sbit.new" ) 2> /dev/null
-    diff -uw "$SEC_DATA/sbit" "$SEC_DATA/sbit.new" | \
-        egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
+    diff -uw "$SEC_DATA/sbit" "$SEC_DATA/sbit.new" | \ egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
     if [ -s "$output_file" ] ; then
         printf "\nThe following files are suid/sgid:\n"
         cat "$output_file"
@@ -154,11 +178,8 @@ function check_new_devices () {
     local output_file=`mktemp -t new_devices.XXXX` # TEMPDIR is set but not exported.. does it work?
     # warning: bug #51004 ls output depends on root's locale and may be less
     # then 10 tokens!
-    ( nice -n 1 find $mnt_point -mount -type c -or -type b | xargs --no-run-if-empty ls -cdl --time-style=long-iso -- | \
-    awk '{print $1 " \t" $3 " \t" $4 " \t" $5 " \t" $6 " \t" $9}' | sort +5 \
-    > "$SEC_DATA/devices.new" ) 2> /dev/null
-    diff -uw "$SEC_DATA/devices" "$SEC_DATA/devices.new" | \
-    egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
+    ( nice -n 1 find $mnt_point -mount -type c -or -type b | xargs --no-run-if-empty ls -cdl --time-style=long-iso -- | \ awk '{print $1 " \t" $3 " \t" $4 " \t" $5 " \t" $6 " \t" $9}' | sort +5 \ > "$SEC_DATA/devices.new" ) 2> /dev/null
+    diff -uw "$SEC_DATA/devices" "$SEC_DATA/devices.new" |egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
     if [ -s "$output_file" ] ; then
         printf "\nThe following devices were added:\n"
         cat "$output_file"
@@ -184,9 +205,10 @@ function check_md5 () {
 function display_programs_with_bound_sockets () {
     if [ -x /usr/bin/lsof ]; then
         printf "\nThe following programs have got bound sockets:\n"
-        /usr/bin/lsof -i -n -P | egrep 'UDP|TCP.*LISTEN' | sed 's/....[0-9]u  IP.*     /   /' | \ 
-        sed 's/  FD   TYPE DEVICE SIZE NODE NAME/PROTO PORT/' | sed 's/ [0-9][0-9]* / /'| \ 
-        sed 's/ PID / /'|sort -u
+        /usr/bin/lsof -i -n -P | egrep 'UDP|TCP.*LISTEN' | sed 's/....[0-9]u  IP.*     /   /' | 
+        sed 's/  FD   TYPE DEVICE SIZE NODE NAME/PROTO PORT/' | 
+        sed 's/ [0-9][0-9]* / /'| 
+        sed 's/ PID / /'| sort -u
     fi
 
 }

@@ -11,11 +11,11 @@
 #
 . ./basic.inc
 
-source helper.inc
-source user_group_password_helper.inc
-source misc_helper.inc
+source ./helper.inc
+source ./user_group_password_helper.inc
+source ./misc_helper.inc
 
-set_tmpdir $0
+set_tmpdir "security-daily.sh"
 
 trap 'rm -rf $TMPDIR; exit 1' 0 1 2 3 13 15
 LOG="$TMPDIR/security.log"
