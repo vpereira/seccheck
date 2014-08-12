@@ -50,7 +50,7 @@ case "$1" in
     'daily') 
          /bin/sh "$SEC_BIN/security-daily.sh" 1> "$OUT1"
          /usr/bin/diff -q -w "$OLD1" "$OUT1" 1> /dev/null || (
-            {
+         {
             cat <<-EOF
             To: $SECCHK_USER
             Subject: Local Daily Security for `hostname`: Changes
@@ -60,11 +60,11 @@ case "$1" in
 
             Changes in your daily security configuration of `hostname`:
 
-        EOF
+EOF
 
-              /usr/bin/diff -u -w "$OLD1" "$OUT1" | sed 's/^@@.*/\
-        * Changes (+: new entries, -: removed entries):\
-            /' | egrep '^[+*-]|^$' |sed 's/^+++/NEW:/' | sed 's/^---/OLD:/' | sed 's/^[+-]/& /'
+           /usr/bin/diff -u -w "$OLD1" "$OUT1" | \ 
+               sed 's/^@@.*/\ * Changes (+: new entries, -: removed entries):\ /' | \
+               egrep '^[+*-]|^$' |sed 's/^+++/NEW:/' | sed 's/^---/OLD:/' | sed 's/^[+-]/& /'
             } | $MAILER "$SECCHK_USER"
             /bin/mv "$OUT1" "$OLD1"
          )
@@ -84,7 +84,7 @@ case "$1" in
 
             Changes in your weekly security configuration of `hostname`:
 
-        EOF
+EOF
               cat "$OUT2"
             } | $MAILER "$SECCHK_USER"
             mv "$OUT2" "$OLD2"
@@ -105,7 +105,7 @@ case "$1" in
 
             Monthly security check $VERSION by Marc Heuse <marc@suse.de>
 
-        EOF
+EOF
               /bin/sh "$SEC_BIN/security-monthly.sh"
          } | tee "$OLD3" | $MAILER "$SECCHK_USER"
     ;;
