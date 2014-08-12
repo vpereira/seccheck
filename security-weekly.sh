@@ -9,7 +9,7 @@
 #
 
 # TODO re-enable it
-#. /etc/sysconfig/seccheck
+. /etc/sysconfig/seccheck
 
 . ./basic.inc
 

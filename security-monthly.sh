@@ -12,7 +12,7 @@ source ./helper.inc
 run_sysconfig_seccheck
 
 
-#OLD1="$SEC_VAR/security-report-daily"
+OLD1="$SEC_VAR/security-report-daily"
 #OLD2="$SEC_VAR/security-report-weekly"
 #OLD3="$SEC_VAR/security-report-monthly"
 
