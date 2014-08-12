@@ -2,7 +2,7 @@
 
 function check_passwd () {
 
-    output_file=`mktemp -t check_passwd.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t check_passwd.XXXX` # TEMPDIR is set but not exported.. does it work?
     # /etc/passwd check
     #
     PW="/etc/passwd"
@@ -60,7 +60,7 @@ function check_passwd () {
 }
 
 function check_shadow () {
-    output_file=`mktemp -t check_passwd.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t check_passwd.XXXX` # TEMPDIR is set but not exported.. does it work?
     PW="/etc/shadow"
     awk -F: '{
             if ($0 ~ /^[ 	]*$/) {
@@ -97,7 +97,7 @@ function check_shadow () {
 }
 
 function check_group () {
-    output_file=`mktemp -t check_group.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t check_group.XXXX` # TEMPDIR is set but not exported.. does it work?
     GRP=/etc/group
     awk -F: '{
             if ($0 ~ /^[	 ]*$/) {
@@ -131,18 +131,19 @@ function check_group () {
 
 function check_ftpusers () {
     if [ -s /etc/ftpusers ]; then
-        > $OUT
-        grep -q '^root$' /etc/ftpusers || echo root >> $OUT
-        grep -q '^bin$' /etc/ftpusers || echo bin >> $OUT
-            grep -q '^uucp$' /etc/ftpusers || echo uucp >> $OUT
-            grep -q '^daemon$' /etc/ftpusers || echo daemon >> $OUT
-            grep -q '^nobody$' /etc/ftpusers || echo nobody >> $OUT
-            grep -q '^lp$' /etc/ftpusers || echo lp >> $OUT
-            grep -q '^man$' /etc/ftpusers || echo man >> $OUT
-        if [ -s "$OUT" ] ; then
+        local output_file=`mktemp -t check_ftpusers.XXXX` # TEMPDIR is set but not exported.. does it work?
+        grep -q '^root$' /etc/ftpusers || echo root >> $output_file
+        grep -q '^bin$' /etc/ftpusers || echo bin >> $output_file
+            grep -q '^uucp$' /etc/ftpusers || echo uucp >> $output_file
+            grep -q '^daemon$' /etc/ftpusers || echo daemon >> $output_file
+            grep -q '^nobody$' /etc/ftpusers || echo nobody >> $output_file
+            grep -q '^lp$' /etc/ftpusers || echo lp >> $output_file
+            grep -q '^man$' /etc/ftpusers || echo man >> $output_file
+        if [ -s "$output_file" ] ; then
             printf "\nThe following system accounts are missing in /etc/ftpusers:\n"
-            cat "$OUT"
+            cat "$output_file"
         fi
+        rm -f "$output_file"
     fi
 }
 

@@ -1,20 +1,23 @@
 # misc security checks
 
+# executables should not be in the /etc/aliases file.
 function no_exec_in_etcaliases () {
-    # executables should not be in the /etc/aliases file.
     if [ -s /etc/aliases ]; then
-        grep -v '^#' /etc/aliases | grep '|' > $OUT
-        if [ -s "$OUT" ] ; then
+        local output_file=`mktemp -t no_exec_in_etcaliases.XXXX` # TEMPDIR is set but not exported.. does it work?
+        grep -v '^#' /etc/aliases | grep '|' > $output_file
+        if [ -s "$output_file" ] ; then
                 printf "\nThe following programs are executed in your mail via /etc/aliases (bad!):\n"
-                cat "$OUT"
+                cat "$output_file"
         fi
+        rm -f "$output_file"
     fi
 
 
 }
 
-
+# it doesnt save it to a file like the others.. why?
 function check_no_plus () {
+    local output_file=`mktemp -t check_no_plus.XXXX` # TEMPDIR is set but not exported.. does it work?
     list="/etc/hosts.equiv /etc/shosts.equiv /etc/hosts.lpd"
     for f in $list ; do
             if [ -s "$f" ] ; then
@@ -30,7 +33,7 @@ function check_no_plus () {
 
 # .rhosts check
 function check_rhosts () {
-    output_file=`mktemp -t check_rhosts.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t check_rhosts.XXXX` # TEMPDIR is set but not exported.. does it work?
     awk -F: '{ print $1 " " $6 }' /etc/passwd |
     while read uid homedir; do
             for j in .rhosts .shosts; do
@@ -49,11 +52,12 @@ function check_rhosts () {
             printf "\nChecking for users with .rhosts/.shosts files.\n"
             cat "$output_file"
     fi
+    rm -f "$output_file"
 }
 
 # Check home directories.  Directories should not be owned by someone else
 function check_home_directories_owners () {
-    output_file=`mktemp -t home_directories_owners.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t home_directories_owners.XXXX` # TEMPDIR is set but not exported.. does it work?
     awk -F: '/^[^+-]/ { print $1 " " $6 }' /etc/passwd | \
     while read uid homedir; do
             if [ -d ${homedir}/ ] ; then
@@ -105,12 +109,11 @@ function check_special_files_owner () {
     fi
 }
 
+# checking root's login scrips for secure path and umask
 function check_root_login_scripts () {
-    # checking root's login scrips for secure path and umask
-    # XXX: define those files
-    > $OUT
-    > $TMP1
-    > $TMP2
+    local output_file=`mktemp -t check_root_login_scripts.0.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local tmp_file1=`mktemp -t check_root_login_scripts.1.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local tmp_file2=`mktemp -t check_root_login_scripts.2.XXXX` # TEMPDIR is set but not exported.. does it work?
     rhome=/root
     umaskset=no
     list="/etc/csh.cshrc /etc/csh.login"
@@ -123,13 +126,13 @@ function check_root_login_scripts () {
                     awk '$2 % 100 < 20 \
                             { print "Root umask is group writeable" }
                          $2 % 10 < 2 \
-                            { print "Root umask is other writeable" }' >> $OUT
+                            { print "Root umask is other writeable" }' >> $output_file
                     SAVE_PATH=$PATH
                     unset PATH 2> /dev/null || PATH="" # redhat ... 
                     /bin/csh -f -s << end-of-csh > /dev/null 2>&1
                             test -f "$i" && (	# still a race
                                 source $i
-                                /bin/ls -ldcbg \$path > $TMP1
+                                /bin/ls -ldcbg \$path > $tmp_file1
                 )
     end-of-csh
                     PATH=$SAVE_PATH
@@ -143,22 +146,22 @@ function check_root_login_scripts () {
             { print "Root path directory " $9 " is group writeable." } \
                          $1 ~ /^d.......w/ \
             { print "Root path directory " $9 " is other writeable." }' \
-                    < $TMP1 >> $TMP2
+                    < $tmp_file1 >> $tmp_file2
             fi
     done
-    if [ $umaskset = "no" -o -s "$TMP2" ] ; then
-        sort -u $TMP2 > $OUT
+    if [ $umaskset = "no" -o -s "$tmp_file2" ] ; then
+        sort -u $tmp_file2 > $output_file
             printf "\nChecking root csh paths, umask values:\n$list\n"
-            if [ -s "$OUT" ] ; then
-                    cat "$OUT"
+            if [ -s "$output_file" ] ; then
+                    cat "$output_file"
             fi
             if [ $umaskset = "no" ] ; then
                     printf "\nRoot csh startup files do not set the umask.\n"
             fi
     fi
-    > $OUT
-    > $TMP1
-    > $TMP2
+    > $output_file
+    > $tmp_file1
+    > $tmp_file2
     rhome=/root
     umaskset=no
     list="/etc/profile ${rhome}/.profile ${rhome}/.bashrc ${rhome}/.bash_login"
@@ -171,13 +174,13 @@ function check_root_login_scripts () {
                     awk '$2 % 100 < 20 \
                             { print "Root umask is group writeable" } \
                          $2 % 10 < 2 \
-                            { print "Root umask is other writeable" }' >> $OUT
+                            { print "Root umask is other writeable" }' >> $output_file
                     SAVE_PATH=$PATH
                     unset PATH 2> /dev/null || PATH="" # redhat again ...
                     /bin/sh << end-of-sh > /dev/null 2>&1
                             file "$i" | grep -qw text && . $i
                             list=\`echo \$PATH | /usr/bin/sed -e 's/:/ /g'\`
-                /bin/ls -ldgbT \$list > $TMP1
+                /bin/ls -ldgbT \$list > $tmp_file1
     end-of-sh
                     PATH=$SAVE_PATH
                     awk '{
@@ -190,19 +193,19 @@ function check_root_login_scripts () {
             { print "Root path directory " $9 " is group writeable." } \
                          $1 ~ /^d.......w/ \
             { print "Root path directory " $9 " is other writeable." }' \
-                    < $TMP1 >> $TMP2
+                    < $tmp_file1 >> $tmp_file2
 
             fi
     done
-    if [ $umaskset = "no" -o -s "$TMP2" ] ; then
-        sort -u $TMP2 > $OUT
+    if [ $umaskset = "no" -o -s "$tmp_file2" ] ; then
+        sort -u $tmp_file2 > $output_file
             printf "\nChecking root sh paths, umask values:\n$list\n"
-            if [ -s "$OUT" ] ; then
-                    cat "$OUT"
+            if [ -s "$output_file" ] ; then
+                    cat "$output_file"
             fi
             if [ $umaskset = "no" ] ; then
                     printf "\nRoot sh startup files do not set the umask.\n"
             fi
     fi
-
+    rm -f "$output_file" "$tmp_file1" "$tmp_file2"
 }

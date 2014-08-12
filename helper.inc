@@ -60,7 +60,7 @@ function initialize_secfiles () {
 function check_neverlogin () {
     bin_path=$1
     # 
-    output_file=`mktemp -t neverlogin.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t neverlogin.XXXX` # TEMPDIR is set but not exported.. does it work?
 
     $bin_path/checkneverlogin > "$output_file"
     if [ -s "$output_file" ] ; then
@@ -101,10 +101,10 @@ function check_guessable_passwords () {
     fi
 }
 
-# param mount points and output-file
+# param mount points
 function check_suid_sgid () {
     mnt_point=$1
-    output_file=`mktemp -t suid_sgid.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t suid_sgid.XXXX` # TEMPDIR is set but not exported.. does it work?
     ( nice -n 1 find $mnt_point -mount \( -perm -04000 -o -perm -02000 \) -type f | sort | \
         xargs --no-run-if-empty ls -cdl --time-style=long-iso -- > "$SEC_DATA/sbit.new" ) 2> /dev/null
     diff -uw "$SEC_DATA/sbit" "$SEC_DATA/sbit.new" | \
@@ -117,10 +117,10 @@ function check_suid_sgid () {
     rm -f "$output_file"
 }
 
-# param mount points and output-file
+# param mount points
 function check_writable_executable () {
     mnt_point=$1
-    output_file=`mktemp -t writable_executable.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t writable_executable.XXXX` # TEMPDIR is set but not exported.. does it work?
     ( nice -n 1 find $mnt_point -mount \( -perm -30 -o -perm -3 \) -type f | sort | \
         xargs --no-run-if-empty ls -cdl --time-style=long-iso -- > "$SEC_DATA/write-bin.new" ) 2> /dev/null
     diff -uw "$SEC_DATA/write-bin" "$SEC_DATA/write-bin.new" | \
@@ -133,10 +133,10 @@ function check_writable_executable () {
     rm -f "$output_file"
 }
 
-# param mount points and output-file
+# param mount points
 function check_world_writable () {
     mnt_point=$1
-    output_file=`mktemp -t world_writable.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t world_writable.XXXX` # TEMPDIR is set but not exported.. does it work?
     ( nice -n 1 find $mnt_point -mount -perm -2 \( -type f -o -type d \) -not -perm -01000 | sort > "$SEC_DATA/write.new" ) 2> /dev/null
     diff -uw "$SEC_DATA/write" "$SEC_DATA/write.new" | \
         egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
@@ -148,10 +148,10 @@ function check_world_writable () {
     rm -f "$output_file"
 }
 
-# param mount points and output-file
+# param mount points
 function check_new_devices () {
     mnt_point=$1
-    output_file=`mktemp -t new_devices.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t new_devices.XXXX` # TEMPDIR is set but not exported.. does it work?
     # warning: bug #51004 ls output depends on root's locale and may be less
     # then 10 tokens!
     ( nice -n 1 find $mnt_point -mount -type c -or -type b | xargs --no-run-if-empty ls -cdl --time-style=long-iso -- | \
@@ -167,9 +167,9 @@ function check_new_devices () {
     rm -f "$output_file"
 }
 
-# param output-file
+# check md5sum from files
 function check_md5 () {
-    output_file=`mktemp -t md5.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t md5.XXXX` # TEMPDIR is set but not exported.. does it work?
     nice -n 1 rpm -Va 2> /dev/null | grep '^5' > "$SEC_DATA/rpm-md5.new"
     diff -uw "$SEC_DATA/rpm-md5" "$SEC_DATA/rpm-md5.new" | \
         egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
@@ -192,7 +192,7 @@ function display_programs_with_bound_sockets () {
 }
 
 function nfs_mounted_with_missing_nosuid () {
-    output_file=`mktemp -t mounted_with_missing_nosuid.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t mounted_with_missing_nosuid.XXXX` # TEMPDIR is set but not exported.. does it work?
     /bin/mount | /usr/bin/grep -v nosuid | /usr/bin/grep ' nfs ' |sort > $output_file
     if [ -s "$output_file" ] ; then
         printf "\nThe following NFS mounts haven't got the nosuid option set:\n"
@@ -202,7 +202,7 @@ function nfs_mounted_with_missing_nosuid () {
 }
 
 function list_loaded_kernel_modules () {
-    output_file=`mktemp -t loaded_kernel_modules.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t loaded_kernel_modules.XXXX` # TEMPDIR is set but not exported.. does it work?
     test -e /proc/modules && { 
         lsmod 2> /dev/null | grep -v '^Module .* Used by$' | awk '{print$1}' | sort > $output_file
         if [ -s "$output_file" ] ; then
@@ -219,15 +219,16 @@ function check_promisc () {
     # rewrite of promisc check to catch all cases even from other hosts if
     # script runs on a central syslog host. Thomas Biege <thomas@suse.de>
     
-    # local devices
-    output_file=`mktemp -t mounted_with_missing_nosuid.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t mounted_with_missing_nosuid.XXXX` # TEMPDIR is set but not exported.. does it work?
 
+    # local devices
     for IF in $(grep "$(date +"%b %e")" /var/log/messages \
               | grep "$HOSTNAME kernel: device .* entered promiscuous mode" \
               | awk -F' ' '{print $7}')
     do
             ifconfig $IF | grep -C 2 PROMISC | grep -v '   [RT]X p' >> $output_file
     done
+
     if [ -s "$output_file" ] ; then
         printf "\nChecking local devices for promiscious mode.\n"
         cat "$output_file"
@@ -249,7 +250,7 @@ function check_promisc () {
 
 function check_for_globally_exported_fs () {
 
-    output_file=`mktemp -t globally_exported_fs.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t globally_exported_fs.XXXX` # TEMPDIR is set but not exported.. does it work?
 
     if [ -s /etc/exports ] ; then
             awk '{
@@ -277,7 +278,7 @@ function check_for_globally_exported_fs () {
 
 
 function check_mailboxes_owned_by_user_and_unreadable () {
-    output_file=`mktemp -t globally_exported_fs.XXXX` # TEMPDIR is set but not exported.. does it work?
+    local output_file=`mktemp -t globally_exported_fs.XXXX` # TEMPDIR is set but not exported.. does it work?
     ls -cl /var/spool/mail | sed 1d | \
     awk '$3 != $9 \
         { print "user " $9 " mailbox is owned by " $3 }
