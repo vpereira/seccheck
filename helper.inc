@@ -76,7 +76,7 @@ function send_daily_changes () {
 
 EOF
 
-    /usr/bin/diff -u -w "$old1" "$out1" | \sed 's/^@@.*/\ * Changes (+: new entries, -: removed entries):\ /' | \egrep '^[+*-]|^$' |sed 's/^+++/NEW:/' | \ sed 's/^---/OLD:/' | sed 's/^[+-]/& /' | $MAILER "$SECCHK_USER" 
+    /usr/bin/diff -u -w "$old1" "$out1" | sed 's/^@@.*/\ * Changes (+: new entries, -: removed entries):\ /' | \egrep '^[+*-]|^$' |sed 's/^+++/NEW:/' | \ sed 's/^---/OLD:/' | sed 's/^[+-]/& /' | $MAILER "$SECCHK_USER" 
     /bin/mv "$out1" "$old1"
 }
 
