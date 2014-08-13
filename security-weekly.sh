@@ -11,11 +11,13 @@
 # TODO re-enable it
 . /etc/sysconfig/seccheck
 
-. ./basic.inc
 
-source ./helper.inc
-source ./user_group_password_helper.inc
-source ./misc_helper.inc
+MY_DIR=$(dirname $(readlink -f $0))
+. $MY_DIR/basic.inc
+
+source $MY_DIR/helper.inc
+source $MY_DIR/user_group_password_helper.inc
+source $MY_DIR/misc_helper.inc
 
 
 

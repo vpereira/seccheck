@@ -5,9 +5,10 @@
 #
 ####
 
-. ./basic.inc
+MY_DIR=$(dirname $(readlink -f $0))
+. $MY_DIR/basic.inc
 
-source ./helper.inc
+source $MY_DIR/helper.inc
 
 run_sysconfig_seccheck
 

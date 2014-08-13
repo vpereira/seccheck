@@ -6,10 +6,10 @@
 #
 ####
 VERSION="v3.0"
+MY_DIR=$(dirname $(readlink -f $0))
+. $MY_DIR/basic.inc
 
-. ./basic.inc
-
-source helper.inc
+source $MY_DIR/helper.inc
 
 run_sysconfig_seccheck
 
@@ -21,7 +21,7 @@ if test "$START_SECCHK" != yes -a "$RUN_FROM_CRON" = yes; then
 fi
 
 
-BLURB=`cat blurbs/security_control.txt`
+BLURB=`cat "$MY_DIR/blurbs/security_control.txt"`
 
 
 test -z "$1" && syntax

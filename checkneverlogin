@@ -4,7 +4,8 @@
 # which have got a password set, but never someone logged on to - this means
 # that they might still have their initial weak password!
 #
-. ./basic.inc
+MY_DIR=$(dirname $(readlink -f $0))
+. $MY_DIR/basic.inc
 
 for i in `lastlog | awk '/Never logged in/ {print$1}'`; do
     true = 0
