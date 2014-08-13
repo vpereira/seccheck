@@ -79,6 +79,8 @@ display_programs_with_bound_sockets
 #libraries.
 check_ASLR_enabled
 
+check_leak_kernel_internal_addresses
+
 # check changes on sysctl
 check_sysctl
 

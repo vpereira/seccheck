@@ -216,6 +216,17 @@ function check_ASLR_enabled () {
     fi
 }
 
+function check_leak_internal_addresses () {
+    if test `cat /proc/sys/kernel/kptr_restrict` -ne 1; then
+        printf "/proc/sys/kernel/kptr_restrict should be 1.\n"
+    fi
+
+    if test `cat /proc/sys/kernel/dmesg_restrict` -ne 1; then
+        printf "/proc/sys/kernel/dmesg_restrict should be 1.\n"
+    fi
+
+}
+
 function check_sysctl () {
     local output_file=`mktemp -t check_sysctl.XXXX` # TEMPDIR is set but not exported.. does it work?
     /usr/sbin/sysctl -a > "$SEC_DATA/sysctl.new"
