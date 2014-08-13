@@ -209,3 +209,41 @@ end-of-sh
     fi
     rm -f "$output_file" "$tmp_file1" "$tmp_file2"
 }
+
+function check_ASLR_enabled () {
+    if test `cat /proc/sys/kernel/randomize_va_space` -ne 2; then
+        printf "ASLR isnt enable. By default its enabled.\n"
+    fi
+}
+
+function check_sysctl () {
+    local output_file=`mktemp -t check_sysctl.XXXX` # TEMPDIR is set but not exported.. does it work?
+    /usr/sbin/sysctl -a > "$SEC_DATA/sysctl.new"
+    diff -uw "$SEC_DATA/sysctl" "$SEC_DATA/sysctl.new" |egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
+    if [ -s "$output_file" ] ; then
+        printf "\nThere are the following changes in the output from sysctl -a:\n"
+        cat "$output_file"
+    fi
+    mv "$SEC_DATA/sysctl.new" "$SEC_DATA/sysctl"
+    rm -f "$output_file"
+}
+
+# params
+# $1 the sysctl param
+# $2 the returned value expected
+function check_specifics_sysctl_helper () {
+    test `cat "$SEC_DATA/sysctl" | grep "$1"  | cut -f2 -d'='` -eq $2
+}
+# some specific security sysctl parameters
+function check_specifics_sysctl () {
+
+    
+    if [ ! -e "$SEC_DATA/sysctl" ]; then
+        /usr/sbin/sysctl -a > "$SEC_DATA/sysctl"
+    fi
+    # we can refactor it in a loop
+    check_specifics_sysctl_helper "net.ipv4.tcp_syncookies" 1 || printf "\nnet.ipv4.tcp_syncookies is disabled\n"
+    check_specifics_sysctl_helper "net.ipv4.conf.all.accept_source_route" 0 || printf "\nnet.ipv4.conf.all.accept_source_route is enabled"
+    check_specifics_sysctl_helper "test net.ipv4.conf.all.accept_redirects" 0 || printf "\nnet.ipv4.conf.all_accept_redirects is enabled\n"
+    check_specifics_sysctl_helper "net.ipv4.conf.all.rp_filter" 1 || printf "\nnet.ipv4.conf.all.rp_filter\n is disabled"
+}

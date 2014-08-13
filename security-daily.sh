@@ -75,6 +75,15 @@ nfs_mounted_with_missing_nosuid
 # display programs with bound sockets
 display_programs_with_bound_sockets
 
+# ASLR should be enabled per default. it randomizes the heap, stack and load addresses of dynamically linked
+#libraries.
+check_ASLR_enabled
+
+# check changes on sysctl
+check_sysctl
+
+# check if sysctl security options are set
+check_specifics_sysctl 
 ####
 #
 # Cleaning up
