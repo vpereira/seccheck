@@ -273,7 +273,6 @@ function check_specifics_sysctl_helper () {
 
 # some specific security sysctl parameters
 function check_specifics_sysctl () {
-
     
     if [ ! -e "$SEC_DATA/sysctl" ]; then
         /usr/sbin/sysctl -a > "$SEC_DATA/sysctl"
@@ -281,6 +280,6 @@ function check_specifics_sysctl () {
     # we can refactor it in a loop
     check_specifics_sysctl_helper "net.ipv4.tcp_syncookies" 1 || printf "\nnet.ipv4.tcp_syncookies is disabled\n"
     check_specifics_sysctl_helper "net.ipv4.conf.all.accept_source_route" 0 || printf "\nnet.ipv4.conf.all.accept_source_route is enabled"
-    check_specifics_sysctl_helper "test net.ipv4.conf.all.accept_redirects" 0 || printf "\nnet.ipv4.conf.all_accept_redirects is enabled\n"
+    check_specifics_sysctl_helper "net.ipv4.conf.all.accept_redirects" 0 || printf "\nnet.ipv4.conf.all_accept_redirects is enabled\n"
     check_specifics_sysctl_helper "net.ipv4.conf.all.rp_filter" 1 || printf "\nnet.ipv4.conf.all.rp_filter\n is disabled"
 }
