@@ -79,7 +79,15 @@ display_programs_with_bound_sockets
 #libraries.
 check_ASLR_enabled
 
+# to avoid kernel internal address to be leaked via log files
+# kernel internal address are useful for exploit writers
 check_leak_kernel_internal_addresses
+
+# check xinetd running services
+check_xinetd_services
+
+# check systemd running services
+check_systemd_services
 
 # check changes on sysctl
 check_sysctl

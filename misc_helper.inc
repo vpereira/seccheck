@@ -227,6 +227,31 @@ function check_leak_internal_addresses () {
 
 }
 
+
+function check_xinted_services () {
+     local output_file=`mktemp -t check_xinted_services.XXXX` # TEMPDIR is set but not exported.. does it work?
+     /sbin/chkconfig --list | awk '/xinetd based services/,/""/' | grep -v off > "$SEC_DATA/xinetd.new"
+     diff -uw "$SEC_DATA/xinetd" "$SEC_DATA/xinetd.new" |egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
+     if [ -s "$output_file" ] ; then
+        printf "\nThere are the following changes in xinetd running services output:\n"
+        cat "$output_file"
+     fi
+     mv "$SEC_DATA/xinetd.new" "$SEC_DATA/xinetd"
+     rm -f "$output_file"
+}
+
+function check_systemd_services() {
+    local output_file=`mktemp -t check_systemd_services.XXXX` # TEMPDIR is set but not exported.. does it work?
+    /usr/bin/systemctl list-unit-files --type=service > "$SEC_DATA/systemd_services.new"
+    diff -uw "$SEC_DATA/systemd_services" "$SEC_DATA/systemd_services.new" |egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
+    if [ -s "$output_file" ] ; then
+       printf "\nThere are the following changes in systemctl services output:\n"
+       cat "$output_file"
+    fi
+    mv "$SEC_DATA/systemd_services.new" "$SEC_DATA/systemd_services"
+    rm -f "$output_file"
+}
+
 function check_sysctl () {
     local output_file=`mktemp -t check_sysctl.XXXX` # TEMPDIR is set but not exported.. does it work?
     /usr/sbin/sysctl -a > "$SEC_DATA/sysctl.new"
@@ -245,6 +270,7 @@ function check_sysctl () {
 function check_specifics_sysctl_helper () {
     test `cat "$SEC_DATA/sysctl" | grep "$1"  | cut -f2 -d'='` -eq $2
 }
+
 # some specific security sysctl parameters
 function check_specifics_sysctl () {
 
