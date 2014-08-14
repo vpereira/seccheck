@@ -216,7 +216,7 @@ function check_ASLR_enabled () {
     fi
 }
 
-function check_leak_internal_addresses () {
+function check_leak_kernel_internal_addresses () {
     if test `cat /proc/sys/kernel/kptr_restrict` -ne 1; then
         printf "/proc/sys/kernel/kptr_restrict should be 1.\n"
     fi
@@ -228,7 +228,7 @@ function check_leak_internal_addresses () {
 }
 
 
-function check_xinted_services () {
+function check_xinetd_services () {
      local output_file=`mktemp -t check_xinted_services.XXXX` # TEMPDIR is set but not exported.. does it work?
      /sbin/chkconfig --list | awk '/xinetd based services/,/""/' | grep -v off > "$SEC_DATA/xinetd.new"
      diff -uw "$SEC_DATA/xinetd" "$SEC_DATA/xinetd.new" |egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
@@ -268,7 +268,7 @@ function check_sysctl () {
 # $1 the sysctl param
 # $2 the returned value expected
 function check_specifics_sysctl_helper () {
-    test `cat "$SEC_DATA/sysctl" | grep "$1"  | cut -f2 -d'='` -eq $2
+    test `cat "$SEC_DATA/sysctl" | grep "$1"  | cut -f2 -d'='` -eq "$2"
 }
 
 # some specific security sysctl parameters
