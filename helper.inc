@@ -235,40 +235,6 @@ function list_loaded_kernel_modules () {
     rm -f "$output_file"
 }
 
-# promisc check to catch all cases even from other hosts if
-function check_promisc () {
-    # new promisc check
-    # rewrite of promisc check to catch all cases even from other hosts if
-    # script runs on a central syslog host. Thomas Biege <thomas@suse.de>
-    
-    local output_file=`mktemp -t mounted_with_missing_nosuid.XXXX` # TEMPDIR is set but not exported.. does it work?
-
-    # local devices
-    for IF in $(grep "$(date +"%b %e")" /var/log/messages \
-              | grep "$HOSTNAME kernel: device .* entered promiscuous mode" \
-              | awk -F' ' '{print $7}')
-    do
-            ifconfig $IF | grep -C 2 PROMISC | grep -v '   [RT]X p' >> $output_file
-    done
-
-    if [ -s "$output_file" ] ; then
-        printf "\nChecking local devices for promiscious mode.\n"
-        cat "$output_file"
-    fi
-    rm -f "$output_file"
-    # remote devices
-    for LL in $(grep "$(date +"%b %e")" /var/log/messages \
-              | grep "kernel: device .* entered promiscuous mode" \
-          | grep -v "$HOSTAME")
-    do
-            echo "$LL" >> $output_file
-    done
-    if [ -s "$output_file" ] ; then
-        printf "\nChecking remote devices for promiscious mode. (raw log entries)\n"
-        cat "$output_file"
-    fi
-    rm -f "$output_file"
-}
 
 function check_for_globally_exported_fs () {
 
@@ -296,19 +262,4 @@ function check_for_globally_exported_fs () {
             fi
             rm -f "$output_file"
     fi
-}
-
-
-function check_mailboxes_owned_by_user_and_unreadable () {
-    local output_file=`mktemp -t globally_exported_fs.XXXX` # TEMPDIR is set but not exported.. does it work?
-    ls -cl /var/spool/mail | sed 1d | \
-    awk '$3 != $9 \
-        { print "user " $9 " mailbox is owned by " $3 }
-     $1 != "-rw-------" \
-        { print "user " $9 " mailbox is " $1 ", group " $4 }' > $output_file
-    if [ -s "$output_file" ] ; then
-        printf "\nChecking mailbox ownership.\n"
-        sort -u "$output_file"
-    fi
-    rm -f "$output_file"
 }
