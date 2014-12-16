@@ -65,18 +65,22 @@ function send_daily_changes () {
     local old1=$1
     local out1=$2
     
+    {    
     cat <<-EOF
-    To: $SECCHK_USER
-    Subject: Local Daily Security for `hostname`: Changes
+To: $SECCHK_USER
+Subject: Local Daily Security for `hostname`: Changes
 
-    Daily security check $VERSION by Marc Heuse <marc@suse.de>
-    $BLURB
+Daily security check $VERSION by Marc Heuse <marc@suse.de>
+$BLURB
 
-    Changes in your daily security configuration of `hostname`:
+Changes in your daily security configuration of `hostname`:
+
+Changes (+: new entries, -: removed entries):
 
 EOF
 
-    /usr/bin/diff -u -w "$old1" "$out1" | sed 's/^@@.*/\ * Changes (+: new entries, -: removed entries):\ /' | \egrep '^[+*-]|^$' |sed 's/^+++/NEW:/' | sed 's/^---/OLD:/' | sed 's/^[+-]/& /' | $MAILER "$SECCHK_USER" 
+	/usr/bin/diff -u -w "$old1" "$out1" | egrep '^[+*-]|^$' | sed 's/^+++/NEW:/' | sed 's/^---/OLD:/' | sed 's/^[+-]/& /'
+    } | $MAILER "$SECCHK_USER"
     /bin/mv "$out1" "$old1"
 }
 

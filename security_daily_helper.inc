@@ -38,7 +38,7 @@ function check_systemd_services() {
     /usr/bin/systemctl list-unit-files --type=service > "$SEC_DATA/systemd_services.new"
     diff -uw "$SEC_DATA/systemd_services" "$SEC_DATA/systemd_services.new" |egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
     if [ -s "$output_file" ] ; then
-       printf "\nThere are the following changes in systemctl services output:\n"
+       echo
        cat "$output_file"
     fi
     mv "$SEC_DATA/systemd_services.new" "$SEC_DATA/systemd_services"
@@ -48,18 +48,13 @@ function check_systemd_services() {
 function check_sysctl () {
     local output_file=`mktemp -t check_sysctl.XXXX` # TEMPDIR is set but not exported.. does it work?
     /usr/sbin/sysctl -a > "$SEC_DATA/sysctl.new"
-    diff -uw "$SEC_DATA/sysctl" "$SEC_DATA/sysctl.new" |egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
-    if [ -s "$output_file" ] ; then
-        printf "\nThere are the following changes in the output from sysctl -a:\n"
-        cat "$output_file"
-    fi
+    cat "$SEC_DATA/sysctl.new"
     mv "$SEC_DATA/sysctl.new" "$SEC_DATA/sysctl"
-    rm -f "$output_file"
 }
 
 function check_xinetd_services () {
      local output_file=`mktemp -t check_xinetd_services.XXXX` # TEMPDIR is set but not exported.. does it work?
-     /sbin/chkconfig --list | awk '/xinetd based services/,/""/' | grep -v off > "$SEC_DATA/xinetd.new"
+     /sbin/chkconfig --list 2> /dev/null | awk '/xinetd based services/,/""/' | grep -v off > "$SEC_DATA/xinetd.new"
      diff -uw "$SEC_DATA/xinetd" "$SEC_DATA/xinetd.new" |egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
      if [ -s "$output_file" ] ; then
         printf "\nThere are the following changes in xinetd running services output:\n"
