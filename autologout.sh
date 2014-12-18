@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Small shellscript by Alexander Bergmann <abergmann@suse.com> which checks 
 # for idle user terminals and kills them where applicable. Parameters can be

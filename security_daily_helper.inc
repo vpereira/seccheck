@@ -1,5 +1,5 @@
 # tests specific for security-daily.sh
-function check_mailboxes_owned_by_user_and_unreadable () {
+check_mailboxes_owned_by_user_and_unreadable () {
     local output_file=`mktemp -t globally_exported_fs.XXXX` # TEMPDIR is set but not exported.. does it work?
     ls -cl /var/spool/mail | sed 1d | \
     awk '$3 != $9 \
@@ -16,12 +16,12 @@ function check_mailboxes_owned_by_user_and_unreadable () {
 # params
 # $1 the sysctl param
 # $2 the returned value expected
-function check_specifics_sysctl_helper () {
+check_specifics_sysctl_helper () {
     test `cat "$SEC_DATA/sysctl" | grep "$1"  | cut -f2 -d'='` -eq "$2"
 }
 
 # some specific security sysctl parameters
-function check_specifics_sysctl () {
+check_specifics_sysctl () {
     
     if [ ! -e "$SEC_DATA/sysctl" ]; then
         /usr/sbin/sysctl -a > "$SEC_DATA/sysctl"
@@ -33,7 +33,7 @@ function check_specifics_sysctl () {
     check_specifics_sysctl_helper "net.ipv4.conf.all.rp_filter" 1 || printf "\nnet.ipv4.conf.all.rp_filter\n is disabled"
 }
 
-function check_systemd_services() {
+check_systemd_services() {
     local output_file=`mktemp -t check_systemd_services.XXXX` # TEMPDIR is set but not exported.. does it work?
     /usr/bin/systemctl list-unit-files --type=service > "$SEC_DATA/systemd_services.new"
     diff -uw "$SEC_DATA/systemd_services" "$SEC_DATA/systemd_services.new" |egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
@@ -45,14 +45,14 @@ function check_systemd_services() {
     rm -f "$output_file"
 }
 
-function check_sysctl () {
+check_sysctl () {
     local output_file=`mktemp -t check_sysctl.XXXX` # TEMPDIR is set but not exported.. does it work?
     /usr/sbin/sysctl -a > "$SEC_DATA/sysctl.new"
     cat "$SEC_DATA/sysctl.new"
     mv "$SEC_DATA/sysctl.new" "$SEC_DATA/sysctl"
 }
 
-function check_xinetd_services () {
+check_xinetd_services () {
      local output_file=`mktemp -t check_xinetd_services.XXXX` # TEMPDIR is set but not exported.. does it work?
      /sbin/chkconfig --list 2> /dev/null | awk '/xinetd based services/,/""/' | grep -v off > "$SEC_DATA/xinetd.new"
      diff -uw "$SEC_DATA/xinetd" "$SEC_DATA/xinetd.new" |egrep -v '^\+\+\+ |^--- |^$|^@@' | sed 's/^[+-]/& /' > "$output_file"
@@ -64,13 +64,13 @@ function check_xinetd_services () {
      rm -f "$output_file"
 }
 
-function check_ASLR_enabled () {
+check_ASLR_enabled () {
     if test `cat /proc/sys/kernel/randomize_va_space` -ne 2; then
         printf "ASLR isnt enable. By default its enabled.\n"
     fi
 }
 
-function check_leak_kernel_internal_addresses () {
+check_leak_kernel_internal_addresses () {
     if test `cat /proc/sys/kernel/kptr_restrict` -ne 1; then
         printf "/proc/sys/kernel/kptr_restrict should be 1.\n"
     fi
@@ -82,7 +82,7 @@ function check_leak_kernel_internal_addresses () {
 }
 
 # promisc check to catch all cases even from other hosts if
-function check_promisc () {
+check_promisc () {
     # new promisc check
     # rewrite of promisc check to catch all cases even from other hosts if
     # script runs on a central syslog host. Thomas Biege <thomas@suse.de>
@@ -117,7 +117,7 @@ function check_promisc () {
 }
 
 # .rhosts check
-function check_rhosts () {
+check_rhosts () {
     local output_file=`mktemp -t check_rhosts.XXXX` # TEMPDIR is set but not exported.. does it work?
     awk -F: '{ print $1 " " $6 }' /etc/passwd |
     while read uid homedir; do
@@ -141,7 +141,7 @@ function check_rhosts () {
 }
 
 # executables should not be in the /etc/aliases file.
-function no_exec_in_etcaliases () {
+no_exec_in_etcaliases () {
     if [ -s /etc/aliases ]; then
         local output_file=`mktemp -t no_exec_in_etcaliases.XXXX` # TEMPDIR is set but not exported.. does it work?
         grep -v '^#' /etc/aliases | grep '|' > $output_file
@@ -156,7 +156,7 @@ function no_exec_in_etcaliases () {
 }
 
 # it doesnt save it to a file like the others.. why?
-function check_no_plus () {
+check_no_plus () {
     local output_file=`mktemp -t check_no_plus.XXXX` # TEMPDIR is set but not exported.. does it work?
     list="/etc/hosts.equiv /etc/shosts.equiv /etc/hosts.lpd"
     for f in $list ; do
@@ -172,7 +172,7 @@ function check_no_plus () {
 }
 
 # Check home directories.  Directories should not be owned by someone else
-function check_home_directories_owners () {
+check_home_directories_owners () {
     local output_file=`mktemp -t home_directories_owners.XXXX` # TEMPDIR is set but not exported.. does it work?
     awk -F: '/^[^+-]/ { print $1 " " $6 }' /etc/passwd | \
     while read uid homedir; do
@@ -195,7 +195,7 @@ function check_home_directories_owners () {
 }
 
 # Files that should not be owned by someone else or writeable.
-function check_special_files_owner () {
+check_special_files_owner () {
     output_file=`mktemp -t specia_files_owner.XXXX` # TEMPDIR is set but not exported.. does it work?
     list=".bashrc .bash_profile .bash_login .bash_logout .cshrc .emacs .exrc \
     .forward .klogin .login .logout .profile .tcshrc .fvwmrc .inputrc .kshrc \
@@ -225,7 +225,7 @@ function check_special_files_owner () {
 }
 
 # checking root's login scrips for secure path and umask
-function check_root_login_scripts () {
+check_root_login_scripts () {
     local output_file=`mktemp -t check_root_login_scripts.0.XXXX` # TEMPDIR is set but not exported.. does it work?
     local tmp_file1=`mktemp -t check_root_login_scripts.1.XXXX` # TEMPDIR is set but not exported.. does it work?
     local tmp_file2=`mktemp -t check_root_login_scripts.2.XXXX` # TEMPDIR is set but not exported.. does it work?

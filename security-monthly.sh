@@ -8,7 +8,7 @@
 MY_DIR=$(dirname $(readlink -f $0))
 . $MY_DIR/basic.inc
 
-source $MY_DIR/helper.inc
+. $MY_DIR/helper.inc
 
 run_sysconfig_seccheck
 
@@ -35,28 +35,36 @@ fi
 #    fi
 #done
 
-echo -e '\nNOTE: have you checked http://www.novell.com/products/security.html for security updates?!\n'
+echo '
+NOTE: have you checked http://www.novell.com/products/security.html for security updates?!
+'
 
 cat "$OLD1"
 
 check_guessable_passwords "quick"
 
-echo -e '\nComplete list of unused user accounts which have a password assigned:'
+echo "
+Complete list of unused user accounts which have a password assigned:"
 $SEC_BIN/checkneverlogin
 
-echo -e '\nComplete list of writeable and executeable programs:'
+echo "
+Complete list of writeable and executeable programs:"
 cat "$SEC_DATA/write-bin"
 
-echo -e '\nComplete list of suid/sgid files:'
+echo "
+Complete list of suid/sgid files:"
 cat "$SEC_DATA/sbit"
 
-echo -e '\nComplete list of world writeable files:'
+echo "
+Complete list of world writeable files:"
 cat "$SEC_DATA/write"
 
-echo -e '\nComplete list of all changed installed packages:'
+echo "
+Complete list of all changed installed packages:"
 cat "$SEC_DATA/rpm-md5"
 
-echo -e '\nComplete list of (char/block) devices:'
+echo "
+Complete list of (char/block) devices:"
 cat "$SEC_DATA/devices"
 
 exit 0

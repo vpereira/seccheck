@@ -2,22 +2,22 @@
 # functions used by all modules
 #
 # param: prefix for filename
-function set_tmpdir () {
+set_tmpdir () {
     TMPDIR=`/bin/mktemp -d /tmp/$1.XXXXXX` || exit 1
 }
 
-function run_sysconfig_seccheck () {
+run_sysconfig_seccheck () {
     test -e /etc/sysconfig/seccheck && . /etc/sysconfig/seccheck
 }
 
-function syntax () {
+syntax () {
     /bin/echo "Syntax: $0 "'daily|weekly|monthly'
     exit 1
 }
 
 
 # set which mailer should be used
-function set_mailer () {
+set_mailer () {
     test -z "$MAILER" && test -x "/usr/sbin/sendmail" && MAILER="/usr/sbin/sendmail"
     test -z "$MAILER" && test -x "/usr/bin/mailx" && MAILER="/usr/bin/mailx"
     test -z "$MAILER" && test -x "/usr/lib/sendmail" && MAILER="/usr/lib/sendmail"
@@ -26,7 +26,7 @@ function set_mailer () {
 }
 
 # create necessary directories
-function create_secdir () {
+create_secdir () {
    
     if [ ! -d "$SEC_VAR" ]; then
         rm -rf "$SEC_VAR"
@@ -43,14 +43,14 @@ function create_secdir () {
 # param a username
 # template engine to substitute a variable in a text and prepare it
 # to be sent per email
-function guessable_password_email {
+guessable_password_email () {
     ret_tmpl=`sed "s/{guessable_account}/$1/" blurbs/guessable_passwd.txt`
     echo $ret_tmpl
 }
 
 # those files are needed 
 # param $1 = SEC_DATA, normally /var/lib/seccheck/data
-function initialize_secfiles () {
+initialize_secfiles () {
     for i in "rpm-md5" "sbit" "write" "devices" "write-bin"; do
         if [ ! -e "$1/$i" ] ; then
             touch "$1/$i"
@@ -61,7 +61,7 @@ function initialize_secfiles () {
 # daily changes per email
 # params
 # OLD1, OUT1
-function send_daily_changes () {
+send_daily_changes () {
     local old1=$1
     local out1=$2
     
@@ -88,13 +88,14 @@ EOF
 # use john the ripper to check guessable passwords
 # if you pass "quick" as argument it will simple try to find easy 
 # guessable passwords. otherwise it will use a dictionary
-function check_guessable_passwords () {
+check_guessable_passwords () {
 
-    if type -p john >/dev/null && type -p unshadow >/dev/null ; then
+    if type john >/dev/null 2>&1 && type unshadow >/dev/null 2>&1; then
         # Copy passwd file. Use unique name to avoid races when john takes very long
         SEC_PASSWD="$SEC_VAR/passwd.$$"
         OUT="$TMPDIR/security.out" # random name please
-        echo -e '\nComplete list of user accounts with guessable passwords:'
+        echo
+        echo "Complete list of user accounts with guessable passwords:"
         unshadow /etc/passwd /etc/shadow > $SEC_PASSWD
         if [ "$1" != "quick" ]; then
             nice -n 1 john -single "$SEC_PASSWD" 1> /dev/null 2>&1
@@ -119,7 +120,7 @@ function check_guessable_passwords () {
 
 
 # param mount points
-function check_new_devices () {
+check_new_devices () {
     mnt_point=$1
     local output_file=`mktemp -t new_devices.XXXX` # TEMPDIR is set but not exported.. does it work?
     # warning: bug #51004 ls output depends on root's locale and may be less
@@ -135,7 +136,7 @@ function check_new_devices () {
 }
 
 # check md5sum from files
-function check_md5 () {
+check_md5 () {
     local output_file=`mktemp -t md5.XXXX` # TEMPDIR is set but not exported.. does it work?
     nice -n 1 rpm -Va 2> /dev/null | grep '^5' > "$SEC_DATA/rpm-md5.new"
     diff -uw "$SEC_DATA/rpm-md5" "$SEC_DATA/rpm-md5.new" | \
@@ -148,7 +149,7 @@ function check_md5 () {
     rm -f "$output_file"
 }
 
-function display_programs_with_bound_sockets () {
+display_programs_with_bound_sockets () {
     if [ -x /usr/bin/lsof ]; then
         printf "\nThe following programs have got bound sockets:\n"
         /usr/bin/lsof -i -n -P | egrep 'UDP|TCP.*LISTEN' | sed 's/....[0-9]u  IP.*     /   /' | 
@@ -159,7 +160,7 @@ function display_programs_with_bound_sockets () {
 
 }
 
-function nfs_mounted_with_missing_nosuid () {
+nfs_mounted_with_missing_nosuid () {
     local output_file=`mktemp -t mounted_with_missing_nosuid.XXXX` # TEMPDIR is set but not exported.. does it work?
     /bin/mount | /usr/bin/grep -v nosuid | /usr/bin/grep ' nfs ' |sort > $output_file
     if [ -s "$output_file" ] ; then
@@ -169,7 +170,7 @@ function nfs_mounted_with_missing_nosuid () {
     rm -f "$output_file"
 }
 
-function list_loaded_kernel_modules () {
+list_loaded_kernel_modules () {
     local output_file=`mktemp -t loaded_kernel_modules.XXXX` # TEMPDIR is set but not exported.. does it work?
     test -e /proc/modules && { 
         lsmod 2> /dev/null | grep -v '^Module .* Used by$' | awk '{print$1}' | sort > $output_file
@@ -182,7 +183,7 @@ function list_loaded_kernel_modules () {
 }
 
 
-function check_for_globally_exported_fs () {
+check_for_globally_exported_fs () {
 
     local output_file=`mktemp -t globally_exported_fs.XXXX` # TEMPDIR is set but not exported.. does it work?
 

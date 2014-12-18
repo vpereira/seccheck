@@ -12,9 +12,9 @@
 MY_DIR=$(dirname $(readlink -f $0))
 . $MY_DIR/basic.inc
 
-source $MY_DIR/helper.inc
-source $MY_DIR/security_daily_helper.inc
-source $MY_DIR/user_group_password_helper.inc
+. $MY_DIR/helper.inc
+. $MY_DIR/security_daily_helper.inc
+. $MY_DIR/user_group_password_helper.inc
 
 set_tmpdir "security-daily.sh"
 

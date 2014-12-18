@@ -1,6 +1,6 @@
 # user,group and password related functions
 
-function check_passwd () {
+check_passwd () {
 
     local output_file=`mktemp -t check_passwd.XXXX` # TEMPDIR is set but not exported.. does it work?
     # /etc/passwd check
@@ -50,7 +50,8 @@ function check_passwd () {
     awk -F: '{ print $1 " " $3 }' $PW | sort -n -k2 | tee $TMP1 |
     uniq -d -f 1 | awk '{ print $2 }' > $TMP2
     if [ -s "$TMP2" ] ; then
-            echo -e "\n$PW has duplicate user ids:"
+            echo
+            echo "$PW has duplicate user ids:"
             while read uid; do
                     grep -w $uid\$ $TMP1
             done < $TMP2 | column
@@ -59,7 +60,7 @@ function check_passwd () {
     rm -f "$output_file"
 }
 
-function check_shadow () {
+check_shadow () {
     local output_file=`mktemp -t check_passwd.XXXX` # TEMPDIR is set but not exported.. does it work?
     PW="/etc/shadow"
     awk -F: '{
@@ -96,7 +97,7 @@ function check_shadow () {
     rm -f "$output_file"
 }
 
-function check_group () {
+check_group () {
     local output_file=`mktemp -t check_group.XXXX` # TEMPDIR is set but not exported.. does it work?
     GRP=/etc/group
     awk -F: '{
@@ -129,7 +130,7 @@ function check_group () {
     rm -f "$output_file"
 }
 
-function check_ftpusers () {
+check_ftpusers () {
     if [ -s /etc/ftpusers ]; then
         local output_file=`mktemp -t check_ftpusers.XXXX` # TEMPDIR is set but not exported.. does it work?
         grep -q '^root$' /etc/ftpusers || echo root >> $output_file

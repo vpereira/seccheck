@@ -9,7 +9,7 @@ VERSION="v3.0"
 MY_DIR=$(dirname $(readlink -f $0))
 . $MY_DIR/basic.inc
 
-source $MY_DIR/helper.inc
+. $MY_DIR/helper.inc
 
 run_sysconfig_seccheck
 

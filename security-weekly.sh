@@ -15,9 +15,9 @@
 MY_DIR=$(dirname $(readlink -f $0))
 . $MY_DIR/basic.inc
 
-source $MY_DIR/helper.inc
-source $MY_DIR/security_weekly_helper.inc
-source $MY_DIR/user_group_password_helper.inc
+. $MY_DIR/helper.inc
+. $MY_DIR/security_weekly_helper.inc
+. $MY_DIR/user_group_password_helper.inc
 
 
 

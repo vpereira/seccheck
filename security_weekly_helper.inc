@@ -1,5 +1,5 @@
 # param mount points
-function check_suid_sgid () {
+check_suid_sgid () {
     mnt_point=$1
     local output_file=`mktemp -t suid_sgid.XXXX` # TEMPDIR is set but not exported.. does it work?
     ( nice -n 1 find $mnt_point -mount \( -perm -04000 -o -perm -02000 \) -type f | sort | \
@@ -14,7 +14,7 @@ function check_suid_sgid () {
 }
 
 # param mount points
-function check_writable_executable () {
+check_writable_executable () {
     mnt_point=$1
     local output_file=`mktemp -t writable_executable.XXXX` # TEMPDIR is set but not exported.. does it work?
     ( nice -n 1 find $mnt_point -mount \( -perm -30 -o -perm -3 \) -type f | sort | \
@@ -30,7 +30,7 @@ function check_writable_executable () {
 }
 
 # param mount points
-function check_world_writable () {
+check_world_writable () {
     mnt_point=$1
     local output_file=`mktemp -t world_writable.XXXX` # TEMPDIR is set but not exported.. does it work?
     ( nice -n 1 find $mnt_point -mount -perm -2 \( -type f -o -type d \) -not -perm -01000 | sort > "$SEC_DATA/write.new" ) 2> /dev/null
@@ -46,7 +46,7 @@ function check_world_writable () {
 
 # params 
 # $1 = directory for checkneverlogin
-function check_neverlogin () {
+check_neverlogin () {
     bin_path=$1
     # 
     local output_file=`mktemp -t neverlogin.XXXX` # TEMPDIR is set but not exported.. does it work?
