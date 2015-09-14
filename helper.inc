@@ -27,17 +27,12 @@ set_mailer () {
 
 # create necessary directories
 create_secdir () {
-   
-    if [ ! -d "$SEC_VAR" ]; then
-        rm -rf "$SEC_VAR"
-        mkdir "$SEC_VAR" || exit 1
-    fi
-
-    if [ ! -d "$SEC_DATA" ]; then
-        rm -rf "$SEC_DATA"
-        mkdir "$SEC_DATA" || exit 1
-    fi
-
+  for my_dir in $SEC_VAR $SEC_DATA; do
+        if [ ! -d "$my_dir" ]; then
+          rm -rf $my_dir
+          mkdir $my_dir || exit 1
+        fi
+  done
 }
 
 # param a username
