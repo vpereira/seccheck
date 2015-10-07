@@ -22,7 +22,7 @@ check_specifics_sysctl_helper () {
 
 # some specific security sysctl parameters
 check_specifics_sysctl () {
-    
+
     if [ ! -e "$SEC_DATA/sysctl" ]; then
         /usr/sbin/sysctl -a > "$SEC_DATA/sysctl"
     fi
@@ -46,7 +46,6 @@ check_systemd_services() {
 }
 
 check_sysctl () {
-    local output_file=`mktemp -t check_sysctl.XXXX` # TEMPDIR is set but not exported.. does it work?
     /usr/sbin/sysctl -a > "$SEC_DATA/sysctl.new"
     cat "$SEC_DATA/sysctl.new"
     mv "$SEC_DATA/sysctl.new" "$SEC_DATA/sysctl"
@@ -78,7 +77,6 @@ check_leak_kernel_internal_addresses () {
     if test `cat /proc/sys/kernel/dmesg_restrict` -ne 1; then
         printf "/proc/sys/kernel/dmesg_restrict should be 1.\n"
     fi
-
 }
 
 # promisc check to catch all cases even from other hosts if
@@ -86,7 +84,7 @@ check_promisc () {
     # new promisc check
     # rewrite of promisc check to catch all cases even from other hosts if
     # script runs on a central syslog host. Thomas Biege <thomas@suse.de>
-    
+
     local output_file=`mktemp -t mounted_with_missing_nosuid.XXXX` # TEMPDIR is set but not exported.. does it work?
 
     # local devices
@@ -157,7 +155,6 @@ no_exec_in_etcaliases () {
 
 # it doesnt save it to a file like the others.. why?
 check_no_plus () {
-    local output_file=`mktemp -t check_no_plus.XXXX` # TEMPDIR is set but not exported.. does it work?
     list="/etc/hosts.equiv /etc/shosts.equiv /etc/hosts.lpd"
     for f in $list ; do
             if [ -s "$f" ] ; then
@@ -221,6 +218,7 @@ check_special_files_owner () {
     if [ -s "$output_file" ] ; then
             printf "\nChecking dot files.\n"
             sort -u "$output_file"
+            rm -f "$output_file"
     fi
 }
 
@@ -243,7 +241,7 @@ check_root_login_scripts () {
                          $2 % 10 < 2 \
                             { print "Root umask is other writeable" }' >> $output_file
                     SAVE_PATH=$PATH
-                    unset PATH 2> /dev/null || PATH="" # redhat ... 
+                    unset PATH 2> /dev/null || PATH="" # redhat ...
                     /bin/csh -f -s << end-of-csh > /dev/null 2>&1
                             test -f "$i" && (	# still a race
                                 source $i
