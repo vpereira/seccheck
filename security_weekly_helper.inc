@@ -44,11 +44,11 @@ check_world_writable () {
     rm -f "$output_file"
 }
 
-# params 
+# params
 # $1 = directory for checkneverlogin
 check_neverlogin () {
     bin_path=$1
-    # 
+    #
     local output_file=`mktemp -t neverlogin.XXXX` # TEMPDIR is set but not exported.. does it work?
 
     $bin_path/checkneverlogin > "$output_file"

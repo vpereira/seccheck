@@ -43,14 +43,15 @@ check_guessable_passwords "extended"
 # neverlogin check
 check_neverlogin $SEC_BIN
 
-check_suid_sgid $MNT
+check_suid_sgid "$MNT"
 
-check_writable_executable $MNT
+check_writable_executable "$MNT"
 
-check_world_writable $MNT
+check_world_writable "$MNT"
 
-check_new_devices $MNT
+check_new_devices "$MNT"
 
+check_md5
 
 ####
 #
