@@ -17,7 +17,13 @@ check_mailboxes_owned_by_user_and_unreadable () {
 # $1 the sysctl param
 # $2 the returned value expected
 check_specifics_sysctl_helper () {
-    test `cat "$SEC_DATA/sysctl" | grep "$1"  | cut -f2 -d'='` -eq "$2"
+    if [ -s "$SEC_DATA/sysctl" ]; then
+      sysctl_entry=`cat "$SEC_DATA/sysctl" | grep "$1"`
+      # if the entry exists
+      if [ ! -z "$sysctl_entry" ]; then
+        test `echo $sysctl_entry  | cut -f2 -d'='` -eq "$2"
+      fi
+    fi
 }
 
 # some specific security sysctl parameters
