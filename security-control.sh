@@ -57,13 +57,13 @@ case "$1" in
          if [ -s "$OUT2" ]; then
             {
                 cat <<-EOF
-            To: $SECCHK_USER
-            Subject: Local Weekly Security for `hostname`: Changes
+		To: $SECCHK_USER
+		Subject: Local Weekly Security for `hostname`: Changes
 
-            Weekly security check $VERSION by Marc Heuse <marc@suse.de>
-            $BLURB
+		Weekly security check $VERSION by Marc Heuse <marc@suse.de>
+		$BLURB
 
-            Changes in your weekly security configuration of `hostname`:
+		Changes in your weekly security configuration of `hostname`:
 
 EOF
               cat "$OUT2"
@@ -77,13 +77,13 @@ EOF
          test -e "$SEC_DATA/devices" || /bin/sh "$SEC_BIN/security-weekly.sh" 1> "$OLD2"
          {
             cat <<-EOF
-            To: $SECCHK_USER
-            Subject: Local Monthly Security for `hostname`: Complete
+		To: $SECCHK_USER
+		Subject: Local Monthly Security for `hostname`: Complete
 
-            Monthly security check $VERSION by Marc Heuse <marc@suse.de>
-            $BLURB
+		Monthly security check $VERSION by Marc Heuse <marc@suse.de>
+		$BLURB
 
-            Monthly security check $VERSION by Marc Heuse <marc@suse.de>
+		Monthly security check $VERSION by Marc Heuse <marc@suse.de>
 
 EOF
               /bin/sh "$SEC_BIN/security-monthly.sh"
