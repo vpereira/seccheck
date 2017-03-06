@@ -30,7 +30,7 @@ check_specifics_sysctl_helper () {
 check_specifics_sysctl () {
 
     if [ ! -e "$SEC_DATA/sysctl" ]; then
-        /usr/sbin/sysctl -a > "$SEC_DATA/sysctl"
+        /usr/sbin/sysctl -a > "$SEC_DATA/sysctl" 2>/dev/null
     fi
     # we can refactor it in a loop
     check_specifics_sysctl_helper "net.ipv4.tcp_syncookies" 1 || printf "\nnet.ipv4.tcp_syncookies is disabled\n"
@@ -52,7 +52,7 @@ check_systemd_services() {
 }
 
 check_sysctl () {
-    /usr/sbin/sysctl -a > "$SEC_DATA/sysctl.new"
+    /usr/sbin/sysctl -a > "$SEC_DATA/sysctl.new" 2>/dev/null
     cat "$SEC_DATA/sysctl.new"
     mv "$SEC_DATA/sysctl.new" "$SEC_DATA/sysctl"
 }
