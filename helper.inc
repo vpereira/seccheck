@@ -92,8 +92,11 @@ check_guessable_passwords () {
         echo
         echo "Complete list of user accounts with guessable passwords:"
         unshadow /etc/passwd /etc/shadow > $SEC_PASSWD
-        if [ "$1" != "quick" ]; then
+        if [ "$1" == "quick" ]; then
             nice -n 1 john -single "$SEC_PASSWD" 1> /dev/null 2>&1
+	else
+	    # ln -s /var/lib/john/password.lst $SEC_VAR/dict
+	    # or create your own dict on $SEC_VAR
             nice -n 1 john -rules -w:$SEC_VAR/dict "$SEC_PASSWD" 1> /dev/null 2>&1
         fi
 
