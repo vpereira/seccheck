@@ -224,8 +224,8 @@ check_special_files_owner () {
     if [ -s "$output_file" ] ; then
             printf "\nChecking dot files.\n"
             sort -u "$output_file"
-            rm -f "$output_file"
     fi
+    rm -f "$output_file"
 }
 
 # checking root's login scrips for secure path and umask
