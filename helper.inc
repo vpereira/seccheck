@@ -147,7 +147,7 @@ check_md5 () {
         cat "$output_file"
     fi
     mv "$SEC_DATA/rpm-md5.new" "$SEC_DATA/rpm-md5"
-    rm -f "$output_file" "$mytempfile"
+    rm -f "$output_file" "$tempfile"
 }
 
 display_programs_with_bound_sockets () {
