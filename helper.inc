@@ -62,6 +62,7 @@ send_daily_changes () {
 
     {
     cat <<-EOF
+From: $SECCHK_FROM
 To: $SECCHK_USER
 Subject: Local Daily Security for `hostname`: Changes
 

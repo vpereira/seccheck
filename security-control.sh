@@ -14,9 +14,10 @@ MY_DIR=$(dirname $(readlink -f $0))
 run_sysconfig_seccheck
 
 test -z "$SECCHK_USER" && SECCHK_USER="root"
+test -z "$SECCHK_FROM" && SECCHK_FROM="root"
 
 if test "$START_SECCHK" != yes -a "$RUN_FROM_CRON" = yes; then
-  #echo "seccheck disabled by START_SECCHK" 
+  #echo "seccheck disabled by START_SECCHK"
   exit 0
 fi
 
@@ -35,7 +36,7 @@ OUT2="$SEC_VAR/security-report-weekly.new"
 OLD2="$SEC_VAR/security-report-weekly"
 OLD3="$SEC_VAR/security-report-monthly"
 
-create_secdir 
+create_secdir
 
 for i in "$OLD1" "$OLD2" "$OLD3" ; do
     if [ "$i" != "" ]; then
@@ -47,9 +48,9 @@ done
 
 case "$1" in
 
-    'daily') 
+    'daily')
          /bin/sh "$SEC_BIN/security-daily.sh" 1> "$OUT1"
-         /usr/bin/diff -q -w "$OLD1" "$OUT1" 1> /dev/null || send_daily_changes $OLD1 $OUT1 
+         /usr/bin/diff -q -w "$OLD1" "$OUT1" 1> /dev/null || send_daily_changes $OLD1 $OUT1
    ;;
 
     'weekly')
@@ -57,6 +58,7 @@ case "$1" in
          if [ -s "$OUT2" ]; then
             {
                 cat <<-EOF
+    From: $SECCHK_FROM
 		To: $SECCHK_USER
 		Subject: Local Weekly Security for `hostname`: Changes
 
@@ -77,6 +79,7 @@ EOF
          test -e "$SEC_DATA/devices" || /bin/sh "$SEC_BIN/security-weekly.sh" 1> "$OLD2"
          {
             cat <<-EOF
+    From: $SECCHK_FROM
 		To: $SECCHK_USER
 		Subject: Local Monthly Security for `hostname`: Complete
 
@@ -90,5 +93,5 @@ EOF
          } | tee "$OLD3" | $MAILER "$SECCHK_USER"
     ;;
  esac
- 
+
 exit 0
